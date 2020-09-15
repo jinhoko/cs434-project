@@ -1,2 +1,17 @@
+# language-related
 *.class
 *.log
+
+# builder-related
+.history
+.cache
+lib_managed/
+src_managed/
+target/
+
+#intellij-related
+.idea/
+*.iml
+
+# OS-related
+.DS_Store
