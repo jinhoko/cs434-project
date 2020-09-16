@@ -15,3 +15,34 @@ A project repository for POSTECH CSED434 Adv. Programming Fall 2020
 | 3   | Project final report | 12월 14일 11:59pm | Not started |         |
 
 *(recent update : 9 Sep )*
+
+### Project Directory Structure
+
+```
+/src
+    /main
+        /scala
+        /resources
+    /test
+        /scala
+/master
+    /src
+        /main
+            /scala
+            /resources
+        /test
+            /scala
+/worker
+    /src
+        /main
+            /scala
+            /resources
+        /test
+            /scala
+/target
+/project
+    build.properties
+    pulgins.sbt
+build.sbt
+...
+```
