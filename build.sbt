@@ -8,9 +8,14 @@ sbtVersion := "0.13.8"
 lazy val commonSettings = Seq(
   scalaVersion := "2.11.2",
   libraryDependencies ++= Seq(
-    "org.scalatest" %% "scalatest" % "3.0.8" % "test",    // testing scala
-    "com.github.os72" % "protoc-jar" % "3.0.0.1"          // networking library made by Google
-                                                          // standard logging librarys
+    // scalatest
+    "org.scalatest" %% "scalatest" % "3.0.8" % "test",
+    // protobuf
+    "com.github.os72" % "protoc-jar" % "3.0.0.1",
+    // log4j v2
+    "org.apache.logging.log4j" % "log4j-core" % "2.12.1",
+    "org.apache.logging.log4j" % "log4j-api" % "2.12.1",
+    "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.12.1"
   )
 )
 
