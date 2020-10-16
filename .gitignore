@@ -15,3 +15,6 @@ target/
 
 # OS-related
 .DS_Store
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store
