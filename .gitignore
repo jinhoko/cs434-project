@@ -10,7 +10,7 @@ src_managed/
 target/
 
 #intellij-related
-.idea/
+/.idea/
 *.iml
 
 # OS-related
