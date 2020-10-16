@@ -4,6 +4,9 @@ A project repository for POSTECH CSED434 Adv. Programming Fall 2020
 ### Author
 **Jinho Ko (20180274)**, dept. of Creative IT Eng. 
 
+### (temp) Project Name 
+**DPsort** : A Distributed, Parallel Sorting Library
+
 ### Project Goal
 **Distributed/Parallel** sorting K/V records stored on **multiple disks** and **multiple machines**.
 
@@ -39,7 +42,6 @@ A project repository for POSTECH CSED434 Adv. Programming Fall 2020
             /resources
         /test
             /scala
-/target
 /project
     build.properties
     pulgins.sbt
