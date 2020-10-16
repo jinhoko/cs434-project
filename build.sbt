@@ -1,6 +1,7 @@
 // Project-related
-name := "root"
+name := "DPsort"
 version := "0.1"
+//sourcesInBase := false
 
 // scala/sbt versions
 sbtVersion := "0.13.8"
@@ -19,16 +20,27 @@ lazy val commonSettings = Seq(
   )
 )
 
-//root project
-lazy val root = (project in file("."))
+lazy val DPsort = (project in file("."))
+  .settings(name := "DPsort")
   .settings(commonSettings)
-  .aggregate(master, worker)
+  .aggregate(core, master, worker)
 
-//sub-projects
-lazy val master = (project in file("master"))
+//core project
+lazy val core = (project in file("./core"))
+  .settings(name := "core")
   .settings(commonSettings)
-lazy val worker = (project in file("worker"))
+//  .aggregate(master, worker)
+
+// master project
+lazy val master = (project in file("./master"))
+  .settings(name := "master")
   .settings(commonSettings)
+
+// worker project
+lazy val worker = (project in file("./worker"))
+  .settings(name := "worker")
+  .settings(commonSettings)
+
 
 // Test behavior
 // Test / fork := true
