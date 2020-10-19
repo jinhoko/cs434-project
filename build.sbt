@@ -1,5 +1,5 @@
 // Project-related
-name := "DPsort"
+name := "dpsort"
 version := "0.1"
 //sourcesInBase := false
 
@@ -20,8 +20,8 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val DPsort = (project in file("."))
-  .settings(name := "DPsort")
+lazy val dpsort = (project in file("."))
+  .settings(name := "dpsort")
   .settings(commonSettings)
   .aggregate(core, master, worker)
 
