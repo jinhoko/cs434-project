@@ -1,0 +1,82 @@
+#!/bin/bash
+
+#######################
+### Parse arguments ###
+#######################
+display_help() {
+    echo "Usage: $(basename "$0") [option...] <NUM_SLAVES> " >&2
+    echo
+    echo "   -h, --help           display help"
+    echo
+    echo "   <NUM_SLAVES>        number of slaves"
+    echo
+}
+
+##########################
+### Optional arguments ###
+##########################
+while :
+do
+    case "$1" in
+      -h | --help)
+          display_help
+          exit 0
+          ;;
+      --) # End of all options
+          shift
+          break
+          ;;
+      -*)
+          echo "Error: Unknown option: $1" >&2
+          exit 1
+          ;;
+      *)  # No more options
+          break
+          ;;
+    esac
+done
+
+###########################
+### Mandatory arguments ###
+###########################
+[ -z $1 ] && echo "Error: Argument <NUM_SLAVES> missing" && exit 1
+[ "$1" -ge 1 ] 2>/dev/null || (echo "Error: Invalid argument <NUM_SLAVES>: ${1}" && exit 1)
+
+################
+### Check OS ###
+################
+platform=""
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  platform="linux"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  platform="macos"
+else
+  echo "Error : Unsupported OS" && exit 1
+fi
+
+#######################
+### Set DPSORT_HOME ###
+#######################
+filepath=""
+if [[ "$platform" == "linux" ]]; then
+  filepath=$(readlink -f "$0")
+elif [[ "$platform" == "macos" ]]; then
+  filepath=$(echo "$(cd $(dirname "$0");pwd)/$(basename "$0")")
+fi
+filedir=$(dirname "$filepath")
+homedir=$(dirname "$filedir")
+export DPSORT_HOME="$homedir"
+
+###################################
+### Validate configuration file ###
+###################################
+conffilepath="${homedir}/conf/MASTER_CONF.xml"
+if [ ! -f "$conffilepath" ]; then
+  echo "Error : config file ${conffilepath} does not exist"
+  exit 1
+fi
+
+#######################
+### Execute program ###
+#######################
+exec 2>/dev/null # TODO exec program arguments
