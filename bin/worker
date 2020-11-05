@@ -1,0 +1,157 @@
+#!/bin/bash
+
+#######################
+### Parse arguments ###
+#######################
+display_help() {
+    echo "Usage: $(basename "$0") [option...] <MASTER_IPPORT> -I <dir1> <dir2> .. -O <dir> " >&2
+    echo
+    echo "   -h, --help                    display help"
+    echo
+    echo "   <MASTER_IPPORT>               master IP:PORT"
+    echo "   -I, --input <dir1> <dir2> ..  input directories"
+    echo "   -O, --output <dir>            output directory"
+    echo
+}
+
+########################
+### Argument parsing ###
+########################
+while :
+do
+    case "$1" in
+      -h | --help)
+          display_help
+          exit 0
+          ;;
+      --) # End of all options
+          shift
+          break
+          ;;
+      -*)
+          echo "Error: Invalid/Unknown option: $1" >&2
+          exit 1
+          ;;
+      *)  # No more options
+          break
+          ;;
+    esac
+done
+
+###########################
+### Mandatory arguments ###
+###########################
+[ -z $1 ] && echo "Error: Argument <MASTER_IPPORT> missing" && exit 1
+ipport=$1
+shift
+
+##########################
+### Argument parsing 2 ###
+##########################
+inputfiles=()
+outputfile=""
+while :
+do
+    case "$1" in
+      -I | --input)
+          shift
+          while :
+          do
+              case "$1" in
+                "") break;;
+                -*) break;;
+                *) inputfiles+=( "$1" ) ; shift;;
+              esac
+          done;;
+      -O | --output)
+          shift
+          while :
+          do
+              case "$1" in
+                "") break;;
+                -*) break;;
+                *) outputfile="$1"; shift; break;;
+              esac
+          done;;
+      -*)
+          echo "Error: Unknown option: $1" >&2; exit 1;;
+      *)
+          break;;
+    esac
+done
+
+#######################
+# Argument checking ###
+#######################
+#echo $outputfile
+#( IFS=$'\n'; echo "${inputfiles[*]}" )
+if [ "${#inputfiles[@]}" -lt 1 ]
+then
+  echo "Error: Wrong number of input path(s) provided"
+  exit 1
+fi
+[[ "$outputfile" == "" ]] && echo "Error: No output path provided" && exit 1
+
+#################################
+# IP/PORT and directory check ###
+#################################
+ip="";port=""
+IFS=':'
+read -ra ipportarray <<< "$ipport"
+ip="${ipportarray[0]}"
+port="${ipportarray[1]}"
+
+[[ "$ip" == "" || "$port" == ""  ]] && echo "Error: Invalid argument <MASTER_IPPORT> : $ipport" && exit 1
+
+for dir in $inputfiles; do
+    if [ ! -d $dir ] ; then
+      echo "Error: Directory not found : $dir" && exit 1
+    fi
+done
+if [ ! -d $outputfile ] ; then
+      echo "Error: Directory not found : $outputfile" && exit 1
+fi
+
+
+################
+### Check OS ###
+################
+platform=""
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  platform="linux"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  platform="macos"
+else
+  echo "Error : Unsupported OS" && exit 1
+fi
+
+#######################
+### Set DPSORT_HOME ###
+#######################
+filepath=""
+if [[ "$platform" == "linux" ]]; then
+  filepath=$(readlink -f "$0")
+elif [[ "$platform" == "macos" ]]; then
+  filepath=$(echo "$(cd $(dirname "$0");pwd)/$(basename "$0")")
+fi
+filedir=$(dirname "$filepath")
+homedir=$(dirname "$filedir")
+export DPSORT_HOME="$homedir"
+
+###################################
+### Validate configuration file ###
+###################################
+conffilepath="${homedir}/conf/WORKER_CONF.xml"
+if [ ! -f "$conffilepath" ]; then
+  echo "Error : config file ${conffilepath} does not exist"
+  exit 1
+fi
+
+# (check envvar)
+#echo $DPSORT_HOME
+#echo $PWD
+
+#######################
+### Execute program ###
+#######################
+exec 2>/dev/null # TODO exec program arguments
