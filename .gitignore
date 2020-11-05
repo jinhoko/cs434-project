@@ -18,3 +18,7 @@ target/
 ._.DS_Store
 **/.DS_Store
 **/._.DS_Store
+
+# production-related
+.local/
+production/
