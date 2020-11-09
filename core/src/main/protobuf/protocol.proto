@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package dpsort.core;
+
+//
+// Service Definition
+//
+service MasterTaskService {
+  rpc RegisterWorker (RegistryMsg) returns (ResponseMsg) {}
+  rpc ReportTaskResult (TaskReportMsg) returns (ResponseMsg) {}
+}
+
+service WorkerTaskService {
+  rpc RequestTask (TaskMsg) returns (ResponseMsg) {}
+}
+
+// TODO phase 3
+//service ShuffleService {
+//  // not sure
+//  rpc RequestShuffle (ShuffleRequestMsg) returns (ResponseMsg) {}
+//  rpc SendShuffleData (ShuffleDataMsg) returns (ResponseMsg) {}
+//}
+
+service HeartBeatService {
+  rpc HeartBeatReport (HeartBeatMsg) returns (ResponseMsg) {}
+}
+
+//
+// Message Definition
+//
+message RegistryMsg {
+  // IP, sets of files
+
+}
+
+message TaskMsg {
+  // TaskID
+  // TaskType
+  // TaskInput
+}
+
+message TaskReportMsg {
+  // TaskID
+  // TaskType
+  // TaskResult
+}
+
+message ResponseMsg {
+  // ResponseMsgType
+  //
+}
+
+// TODO phase 3
+//message ShuffleRequestMsg {
+//
+//}
+//
+//message ShuffleDataMsg {
+//  // ShuffleDataType
+//  sint32 a = 1;
+//  sint32 b = 2;
+//}
+
+message HeartBeatMsg {
+  // HeartBeatType
+}

@@ -79,4 +79,13 @@ fi
 #######################
 ### Execute program ###
 #######################
-exec 2>/dev/null # TODO exec program arguments
+export DPSORT_SCALA_VERSION="2.13"
+export DPSORT_VERSION="0.1.0"
+
+java -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.properties \
+-jar $DPSORT_HOME/master/target/scala-${DPSORT_SCALA_VERSION}/master-assembly-${DPSORT_VERSION}-SNAPSHOT.jar \
+Main
+
+#java -jar $DPSORT_HOME/target/scala-${DPSORT_SCALA_VERSION}/dpsort-assembly-${DPSORT_VERSION}-SNAPSHOT.jar Main TODO
+
+exit 0

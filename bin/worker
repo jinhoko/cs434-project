@@ -154,4 +154,11 @@ fi
 #######################
 ### Execute program ###
 #######################
-exec 2>/dev/null # TODO exec program arguments
+export DPSORT_SCALA_VERSION="2.13"
+export DPSORT_VERSION="0.1.0"
+
+java -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.properties \
+-jar $DPSORT_HOME/worker/target/scala-${DPSORT_SCALA_VERSION}/worker-assembly-${DPSORT_VERSION}-SNAPSHOT.jar \
+Main
+
+exit 0
