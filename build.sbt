@@ -1,5 +1,5 @@
 // scala/sbt versions
-scalaVersion in ThisBuild := "2.13.3"
+scalaVersion in ThisBuild := "2.12.10"
 sbtVersion in ThisBuild := "1.3.13"
 
 // Project-related
@@ -8,18 +8,14 @@ version := "0.1.0"
 
 // Execution behavior
 fork := true
-javaOptions ++= Seq(
-  "-Dlog4j.configurationFile=conf/log4j2.properties"
-)
 
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
     // scalatest
     "org.scalatest" %% "scalatest" % "3.0.8" % "test",
-    // log4j v2
-    "org.apache.logging.log4j" % "log4j-core" % "2.13.1",
-    "org.apache.logging.log4j" % "log4j-api" % "2.13.1",
+    // log4j2 scala (http://logging.apache.org/log4j/scala/index.html)
     "org.apache.logging.log4j" %% "log4j-api-scala" % "12.0",
+    "org.apache.logging.log4j" % "log4j-core" % "2.13.0" % Runtime,
     // protobuf
     "io.grpc" % "grpc-netty" % "1.32.1",
     "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % "0.10.0"

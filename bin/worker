@@ -157,8 +157,11 @@ fi
 export DPSORT_SCALA_VERSION="2.13"
 export DPSORT_VERSION="0.1.0"
 
-java -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.properties \
--jar $DPSORT_HOME/worker/target/scala-${DPSORT_SCALA_VERSION}/worker-assembly-${DPSORT_VERSION}-SNAPSHOT.jar \
-Main
+sbt -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.xml \
+worker/run
+
+#java -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.xml \
+#-jar $DPSORT_HOME/worker/target/scala-${DPSORT_SCALA_VERSION}/worker-assembly-${DPSORT_VERSION}-SNAPSHOT.jar \
+#Main
 
 exit 0
