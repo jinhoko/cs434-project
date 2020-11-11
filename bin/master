@@ -79,13 +79,18 @@ fi
 #######################
 ### Execute program ###
 #######################
-export DPSORT_SCALA_VERSION="2.13"
+export DPSORT_SCALA_VERSION="2.12"
 export DPSORT_VERSION="0.1.0"
 
-java -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.properties \
--jar $DPSORT_HOME/master/target/scala-${DPSORT_SCALA_VERSION}/master-assembly-${DPSORT_VERSION}-SNAPSHOT.jar \
-Main
+sbt -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.xml \
+master/run
 
-#java -jar $DPSORT_HOME/target/scala-${DPSORT_SCALA_VERSION}/dpsort-assembly-${DPSORT_VERSION}-SNAPSHOT.jar Main TODO
+#java -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.xml \
+#-jar $DPSORT_HOME/master/target/scala-${DPSORT_SCALA_VERSION}/master-assembly-${DPSORT_VERSION}-SNAPSHOT.jar \
+#Main
+
+#java -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.xml \
+#-jar $DPSORT_HOME/target/scala-${DPSORT_SCALA_VERSION}/dpsort-assembly-${DPSORT_VERSION}.jar \
+#Main
 
 exit 0

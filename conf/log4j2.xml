@@ -1,13 +1,39 @@
-# log4j2.xml
+<?xml version="1.0" encoding="UTF-8"?>
 
-# Define the root logger with appender file
-log = data/log
-log4j.rootLogger = DEBUG, FILE
+<!-- log4j2.xml -->
 
-# Define the file appender
-log4j.appender.FILE=org.apache.log4j.FileAppender
-log4j.appender.FILE.File=${log}/log.out
+<Configuration status="WARN">
+    <Properties>
+        <Property name="logNm">dpsort</Property>
+        <Property name="layoutPattern">
+            %d{yyyy-MM-dd HH:mm:ss.SSS} %highlight{${LOG_LEVEL_PATTERN:-%5p}}{FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=green, TRACE=green} --- [%15.15t] %style{%-40.40c{1.}}{cyan} : %m%n%ex
+        </Property>
+    </Properties>
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${layoutPattern}" />
+        </Console>
+        <RollingFile name="file" fileName="./log/${logNm}.log" filePattern="./log/logs/${logNm}_%d{yyyy-MM-dd}_%i.log">
+            <PatternLayout pattern="${layoutPattern}" />
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB" /> <!-- 이 용량이 초과되면 아래 DefaultRolloverStrategy 정책만큼 넘버링 할거다. -->
+            </Policies>
+            <DefaultRolloverStrategy max="1000" fileIndex="min" />
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <root level="debug" additivity="false" >
+            <appender-ref ref="console" />
+            <appender-ref ref="file" />
+        </root>
+        <logger name="dpsort" level="trace" additivity="false" >
+            <appender-ref ref="console" />
+            <appender-ref ref="file" />
+        </logger>
+        <!--        <logger name="LIBNAME" level="warn" additivity="false" >-->
+        <!--            <appender-ref ref="console" />-->
+        <!--            <appender-ref ref="file" />-->
+        <!--        </logger>-->
+    </Loggers>
+</Configuration>
 
-# Define the layout for file appender
-log4j.appender.FILE.layout=org.apache.log4j.PatternLayout
-log4j.appender.FILE.layout.conversionPattern=%m%n
