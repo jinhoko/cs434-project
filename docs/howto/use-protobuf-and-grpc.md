@@ -1,4 +1,4 @@
-# How to Use Protobuf and gRPC
+# Use Protobuf and gRPC
 
 ## References 
 
