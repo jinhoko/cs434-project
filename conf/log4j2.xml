@@ -1,7 +1,7 @@
-# log4j2.properties
+# log4j2.xml
 
 # Define the root logger with appender file
-log = /data/log
+log = data/log
 log4j.rootLogger = DEBUG, FILE
 
 # Define the file appender
