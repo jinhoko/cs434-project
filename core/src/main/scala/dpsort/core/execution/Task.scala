@@ -1,6 +1,7 @@
 package dpsort.core.execution
 
 import scala.collection._
+import java.io._
 import org.apache.logging.log4j.scala.Logging
 
 
@@ -32,11 +33,20 @@ abstract class BaseTask( i: Int,
   val outputPartition: Unit = outputPart
 }
 
+/*
+ * SerialVersionUID
+ * - 1001L : GenBlockTask
+ * - 1002L : TerminateTask
+ * - 1003L :
+ * - 1004L :
+ * - 1005L :
+ */
+@SerialVersionUID(1001L)
 class GenBlockTask(  i: Int,
                      st: TaskStatus.Value,
                      inputPart: Unit,
                      outputPart: Unit
-                   ) extends BaseTask(i, st, inputPart, outputPart) {
+                   ) extends BaseTask(i, st, inputPart, outputPart) with Serializable {
 
   override def run(): Unit = {
 
@@ -44,11 +54,12 @@ class GenBlockTask(  i: Int,
 
 }
 
+@SerialVersionUID(1002L)
 class TerminateTask( i: Int,
                      st: TaskStatus.Value,
                      inputPart: Unit,
                      outputPart: Unit
-                   ) extends BaseTask(i, st, inputPart, outputPart) {
+                   ) extends BaseTask(i, st, inputPart, outputPart) with Serializable {
 
   override def run(): Unit = {
 

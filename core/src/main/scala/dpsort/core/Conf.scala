@@ -9,3 +9,11 @@ trait Conf {
 // refer to SparkConf
 // https://github.com/apache/spark/blob/master/core/src/main/scala/org/apache/spark/SparkConf.scala
 
+object ConfContext extends Conf {
+
+  // get default file
+  //
+
+
+
+}

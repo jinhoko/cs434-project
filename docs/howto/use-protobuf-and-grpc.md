@@ -3,7 +3,8 @@
 ## References 
 
 - ScalaPB : [link](https://scalapb.github.io/docs/grpc#project-setup)  
-
+- ScalaPB protocol definition : [link](https://scalapb.github.io/docs/getting-started#defining-your-protocol-format)
+- Protobuf format lists : [link](https://developers.google.com/protocol-buffers/docs/proto3#default)
 
 ## Service / Msessage definition
 `file.proto`
