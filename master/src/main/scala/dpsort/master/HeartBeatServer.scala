@@ -17,7 +17,6 @@ object HeartBeatServer extends ServerInterface {
     "HeartBeatServer",
     port
   )
-
 }
 
 
