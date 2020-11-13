@@ -66,11 +66,12 @@ fi
 filedir=$(dirname "$filepath")
 homedir=$(dirname "$filedir")
 export DPSORT_HOME="$homedir"
+cd $DPSORT_HOME || exit 1
 
 ###################################
 ### Validate configuration file ###
 ###################################
-conffilepath="${homedir}/conf/MASTER_CONF.xml"
+conffilepath="${homedir}/conf/master-conf.xml"
 if [ ! -f "$conffilepath" ]; then
   echo "Error : config file ${conffilepath} does not exist"
   exit 1

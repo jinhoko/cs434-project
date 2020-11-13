@@ -2,8 +2,7 @@ package dpsort.master
 
 import org.apache.logging.log4j.scala.Logging
 
-import dpsort.master.{MasterTaskServer, HeartBeatServer}
-
+import dpsort.master.MasterConf
 
 object Main extends Logging {
   def main(args: Array[String]): Unit = {
@@ -12,10 +11,7 @@ object Main extends Logging {
 
     // Start service
     MasterTaskServer.startServer()
-    logger.debug("proceed?")
-
     HeartBeatServer.startServer()
-    // Start heartbeat service
 
     // TODO execute master context
 

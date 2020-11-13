@@ -24,3 +24,4 @@ target/
 production/
 /data/log/
 /data/example-local/
+/tmp/
