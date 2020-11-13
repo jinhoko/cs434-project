@@ -1,7 +1,12 @@
 package dpsort.worker
 
-object Main {
+import org.apache.logging.log4j.scala.Logging
+
+
+object Main extends Logging {
   def main(args : Array[String]): Unit = {
-    printf("this is worker")
+    logger.info("dpsort worker starting")
+    // TODO execute worker context
+    logger.info("dpsort worker finished")
   }
 }
