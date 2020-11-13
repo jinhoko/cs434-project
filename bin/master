@@ -71,7 +71,7 @@ cd $DPSORT_HOME || exit 1
 ###################################
 ### Validate configuration file ###
 ###################################
-conffilepath="${homedir}/conf/master-conf.xml"
+conffilepath="${homedir}/conf/master-conf.properties"
 if [ ! -f "$conffilepath" ]; then
   echo "Error : config file ${conffilepath} does not exist"
   exit 1
