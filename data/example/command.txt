@@ -1,0 +1,6 @@
+[Comamnd for sample data generation]
+
+> gensort -b0 -a 1000000 input-1m-00000
+> gensort -b1000000 -a 1000000 input-1m-00001
+> gensort -b2000000 -a 1000000 input-1m-00002
+...
