@@ -2,24 +2,26 @@ package dpsort.master
 
 import org.apache.logging.log4j.scala.Logging
 
+import dpsort.master.{MasterTaskServer, HeartBeatServer}
+
 
 object Main extends Logging {
   def main(args: Array[String]): Unit = {
     logger.info("dpsort master starting")
-    // TODO execute master context
-    logger.info("dpsort master finished")
-
     // Load Conf object
 
     // Start service
+    MasterTaskServer.startServer()
+    logger.debug("proceed?")
 
+    HeartBeatServer.startServer()
     // Start heartbeat service
 
-    // Wait until
+    // TODO execute master context
 
-    // Start MasterContext
-
-    // Send Master
-
+    // Stop services
+    MasterTaskServer.stopServer()
+    HeartBeatServer.stopServer()
+    logger.info("dpsort master finished")
   }
 }
