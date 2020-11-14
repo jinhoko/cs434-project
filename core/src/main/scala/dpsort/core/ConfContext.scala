@@ -22,33 +22,36 @@ abstract class ConfContext extends Conf with Logging {
   private[this] val configMap = new ConcurrentHashMap[String, String]()
 
   override def get(property: String): String = {
-    handleInputProperty(property)
+    handleInputPropertyValue(property)
     val result = configMap.getOrDefault( property, null )
     if( result == null ) { throw new NoSuchElementException("invalid key") }
     result
   }
 
   override def get(property: String, default: String): String = {
-    handleInputProperty(property)
+    handleInputPropertyValue(property)
     val result = configMap.getOrDefault( property, null )
     if( result == null ) { return default }
     result
   }
 
   override def set(property: String, value: String): Unit = {
-    handleInputProperty(property)
+    handleInputPropertyValue(property, value)
     logger.debug(s"setting property ${property}:${value}")
     configMap.put(property, value)
   }
 
   def setByOverride(property: String, value: String) = {
-    // TODO this should only work when key already exists
-    // if not exists, raise exception
+    handleInputPropertyValue(property, value)
+    get(property) // if key invalid, it wil throw NoSuchElementException
+    set(property, value)
   }
 
-  private def handleInputProperty(property: String) : Unit = {
-    property match {
-      case null => throw new NullPointerException("null key")
+  private def handleInputPropertyValue(property: String, value: String = "") : Unit = {
+    (property, value) match {
+      case (null, null) => throw new NullPointerException("null key and value")
+      case (null, _) => throw new NullPointerException("null key")
+      case (_, null) => throw new NullPointerException("null value")
       case _ => return
     }
   }
@@ -65,7 +68,8 @@ abstract class ConfContext extends Conf with Logging {
 
   }
 
-  protected def loadFromUserDefinedProperties(fileName: String) = {
+  protected def loadFromUserDefinedProperties( fileName: String ) = {
+
     // TODO write to load from user file.
     // if file not found just return
     // call setOverride

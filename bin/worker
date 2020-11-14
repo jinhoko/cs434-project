@@ -111,7 +111,7 @@ done
 if [ ! -d $outputfile ] ; then
       echo "Error: Directory not found : $outputfile" && exit 1
 fi
-
+# TODO !!! change all filenames to absolute directory.
 
 ################
 ### Check OS ###
