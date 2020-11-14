@@ -21,11 +21,22 @@ trait Task extends Logging {
   def run : Unit // TODO define type
 }
 
+/*
+ * SerialVersionUID
+ * - 1000L : BaseTask
+ * - 1001L : GenBlockTask
+ * - 1002L : TerminateTask
+ * - 1003L :
+ * - 1004L :
+ * - 1005L :
+ */
+
+@SerialVersionUID(1000L)
 abstract class BaseTask( i: Int,
                          st: TaskStatus.Value,
                          inputPart: Unit,
                          outputPart: Unit
-                       ) extends Task {
+                       ) extends Task with Serializable {
 
   val id: Int = i
   var status: TaskStatus.Value = st
@@ -33,16 +44,9 @@ abstract class BaseTask( i: Int,
   val outputPartition: Unit = outputPart
 }
 
-/*
- * SerialVersionUID
- * - 1001L : GenBlockTask
- * - 1002L : TerminateTask
- * - 1003L :
- * - 1004L :
- * - 1005L :
- */
+
 @SerialVersionUID(1001L)
-class GenBlockTask(  i: Int,
+final class GenBlockTask(  i: Int,
                      st: TaskStatus.Value,
                      inputPart: Unit,
                      outputPart: Unit
@@ -55,7 +59,7 @@ class GenBlockTask(  i: Int,
 }
 
 @SerialVersionUID(1002L)
-class TerminateTask( i: Int,
+final class TerminateTask( i: Int,
                      st: TaskStatus.Value,
                      inputPart: Unit,
                      outputPart: Unit
@@ -64,7 +68,12 @@ class TerminateTask( i: Int,
   override def run(): Unit = {
 
   }
-
+  val a = 1
+  val aa = new collection.mutable.HashMap[String, String]()
+  aa.put("se", "See")
+  aa.put("he", "heeeee")
 }
 
 // TODO other tasks as well
+// serialization : https://alvinalexander.com/scala/how-to-use-serialization-in-scala-serializable-trait/
+//
