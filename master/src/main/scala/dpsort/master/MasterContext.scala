@@ -39,11 +39,12 @@ object MasterContext extends RoleContext with Logging {
 
     // Execute SampleKeysStage
 
-    //
+    // Execute PartitionAndShuffleStage
 
-    // Terminate
+    // Execute MergeStage
 
-    // r
+    // Execute TerminateStage
+
   }
 
 
