@@ -4,11 +4,13 @@ import dpsort.core.execution.RoleContext
 import dpsort.master.MasterConf
 import org.apache.logging.log4j.scala.Logging
 
-object MasterContext extends RoleContext {
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
+
+object MasterContext extends RoleContext with Logging {
 
   override def initialize = {
-    // Load and instantiate MasterConf
-    MasterConf
     // Start networking services
     MasterTaskServer.startServer
     HeartBeatServer.startServer
@@ -20,11 +22,16 @@ object MasterContext extends RoleContext {
   }
 
   override def execute = {
-    // Wait until everybody comes in
-      // if entry, add IP/Port
-            // add files list to partitionmetastore
 
+    logger.info(s"waiting for workers")
+    val workerRegistryWaitCondition = Future {
+      while( WorkerMetaStore.getWaitingWorkersNum >0 ) {
+        Thread.sleep(1000)
+      }
+    }
+    val workerRegistryWait = Await.result(workerRegistryWaitCondition, Duration.Inf )
 
+    logger.info(s"all ${MasterParams.NUM_SLAVES_INT} workers registered")
 
     // Execute GenBlockStage
 

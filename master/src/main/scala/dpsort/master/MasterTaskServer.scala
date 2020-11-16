@@ -1,8 +1,13 @@
 package dpsort.master
 
-import dpsort.core.network.MasterTaskServiceGrpc;
-import dpsort.core.network.{RegistryMsg, TaskReportMsg, ResponseMsg};
-import dpsort.core.network.{ServerInterface, ServerContext}
+import com.google.protobuf.ByteString
+import dpsort.core.network.MasterTaskServiceGrpc
+import dpsort.core.network.{RegistryMsg, ResponseMsg, TaskReportMsg}
+import dpsort.core.network.{ServerContext, ServerInterface}
+import dpsort.core.Registry
+import dpsort.core.utils.IdUtils
+import dpsort.core.utils.SerializationUtils._
+import dpsort.master.MasterConf._
 
 import scala.concurrent.{ExecutionContext, Future}
 import org.apache.logging.log4j.scala.Logging
@@ -10,7 +15,7 @@ import org.apache.logging.log4j.scala.Logging
 
 object MasterTaskServer extends ServerInterface {
 
-  private val port = 0 ; // TODO
+  private val port = get("dpsort.master.port").toInt
 
   val server : ServerContext = new ServerContext(
     MasterTaskServiceGrpc.bindService(new MasterTaskServiceImpl, ExecutionContext.global),
@@ -20,10 +25,20 @@ object MasterTaskServer extends ServerInterface {
 
 }
 
-private class MasterTaskServiceImpl extends MasterTaskServiceGrpc.MasterTaskService {
+private class MasterTaskServiceImpl extends MasterTaskServiceGrpc.MasterTaskService with Logging {
   override def registerWorker(request: RegistryMsg): Future[ResponseMsg] = {
-    // TODO context
+
+    val bytestr: ByteString = request.serializedRegistryObject
+    val registry: Registry = deserializeByteStringToObject[Registry](bytestr)
+    // TODO registry validity check (if object ok | if (ip,port) not overlap)
+    // Register object
+    registry._WORKER_ID = WorkerMetaStore.addRegistry( registry )
+    // TODO add partition info to PMS
+
+    logger.info(s"Worker id: ${ WorkerMetaStore.getWorkerNum } registered. ${  WorkerMetaStore.getWaitingWorkersNum } remaining.")
+
     Future.successful( new ResponseMsg( ) )
+
   }
 
   override def reportTaskResult(request: TaskReportMsg): Future[ResponseMsg] = {
