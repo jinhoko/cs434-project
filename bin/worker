@@ -48,8 +48,8 @@ shift
 ##########################
 ### Argument parsing 2 ###
 ##########################
-inputfiles=()
-outputfile=""
+inputdirs=()
+outputdir=""
 while :
 do
     case "$1" in
@@ -60,7 +60,7 @@ do
               case "$1" in
                 "") break;;
                 -*) break;;
-                *) inputfiles+=( "$1" ) ; shift;;
+                *) inputdirs+=( "$1" ) ; shift;;
               esac
           done;;
       -O | --output)
@@ -70,7 +70,7 @@ do
               case "$1" in
                 "") break;;
                 -*) break;;
-                *) outputfile="$1"; shift; break;;
+                *) outputdir="$1"; shift; break;;
               esac
           done;;
       -*)
@@ -83,14 +83,14 @@ done
 #######################
 # Argument checking ###
 #######################
-#echo $outputfile
-#( IFS=$'\n'; echo "${inputfiles[*]}" )
-if [ "${#inputfiles[@]}" -lt 1 ]
+#echo $outputdir
+#( IFS=$'\n'; echo "${inputdirs[*]}" )
+if [ "${#inputdirs[@]}" -lt 1 ]
 then
   echo "Error: Wrong number of input path(s) provided"
   exit 1
 fi
-[[ "$outputfile" == "" ]] && echo "Error: No output path provided" && exit 1
+[[ "$outputdir" == "" ]] && echo "Error: No output path provided" && exit 1
 
 #################################
 # IP/PORT and directory check ###
@@ -103,15 +103,14 @@ port="${ipportarray[1]}"
 
 [[ "$ip" == "" || "$port" == ""  ]] && echo "Error: Invalid argument <MASTER_IPPORT> : $ipport" && exit 1
 
-for dir in $inputfiles; do
+for dir in $inputdirs; do
     if [ ! -d $dir ] ; then
       echo "Error: Directory not found : $dir" && exit 1
     fi
 done
-if [ ! -d $outputfile ] ; then
-      echo "Error: Directory not found : $outputfile" && exit 1
+if [ ! -d $outputdir ] ; then
+      echo "Error: Directory not found : $outputdir" && exit 1
 fi
-# TODO !!! change all filenames to absolute directory.
 
 ################
 ### Check OS ###
@@ -125,15 +124,36 @@ else
   echo "Error : Unsupported OS" && exit 1
 fi
 
+getAbsPath_result=""
+function getAbsPath {
+  _inputpath=$1
+  _platform=$2
+  _filepath=""
+  if [[ "$_platform" == "linux" ]]; then
+    _filepath=$(readlink -f "$_inputpath")
+  elif [[ "$platform" == "macos" ]]; then
+    _filepath=$(echo "$(cd $(dirname "$_inputpath");pwd)/$(basename "$_inputpath")")
+  fi
+  getAbsPath_result=$_filepath
+}
+
+###########################################
+### Change input paths to absolute path ###
+###########################################
+getAbsPath $outputdir $platform
+outputdir=$getAbsPath_result
+for i in "${!inputdirs[@]}"; do
+    getAbsPath ${inputdirs[i]} $platform
+    inputdirs[i]=$getAbsPath_result
+done
+
+
 #######################
 ### Set DPSORT_HOME ###
 #######################
-filepath=""
-if [[ "$platform" == "linux" ]]; then
-  filepath=$(readlink -f "$0")
-elif [[ "$platform" == "macos" ]]; then
-  filepath=$(echo "$(cd $(dirname "$0");pwd)/$(basename "$0")")
-fi
+getAbsPath $0 $platform
+filepath=$getAbsPath_result
+
 filedir=$(dirname "$filepath")
 homedir=$(dirname "$filedir")
 export DPSORT_HOME="$homedir"
@@ -149,9 +169,6 @@ if [ ! -f "$conffilepath" ]; then
   exit 1
 fi
 
-# (check envvar)
-#echo $DPSORT_HOME
-#echo $PWD
 
 #######################
 ### Execute program ###
@@ -159,8 +176,10 @@ fi
 export DPSORT_SCALA_VERSION="2.13"
 export DPSORT_VERSION="0.1.0"
 
+IFS=" "
+
 sbt -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.xml \
-worker/run
+"worker/run ${ip} ${port} ${outputdir} ${inputdirs[*]}"
 
 #java -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.xml \
 #-jar $DPSORT_HOME/worker/target/scala-${DPSORT_SCALA_VERSION}/worker-assembly-${DPSORT_VERSION}-SNAPSHOT.jar \

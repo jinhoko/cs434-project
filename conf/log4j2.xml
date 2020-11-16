@@ -30,10 +30,15 @@
             <appender-ref ref="console" />
             <appender-ref ref="file" />
         </logger>
-        <!--        <logger name="LIBNAME" level="warn" additivity="false" >-->
-        <!--            <appender-ref ref="console" />-->
-        <!--            <appender-ref ref="file" />-->
-        <!--        </logger>-->
+        <logger name="io.netty" level="info" additivity="false" >
+            <appender-ref ref="console" />
+            <appender-ref ref="file" />
+        </logger>
+        <logger name="io.grpc" level="info" additivity="false" >
+            <appender-ref ref="console" />
+            <appender-ref ref="file" />
+        </logger>
     </Loggers>
 </Configuration>
 
+<!-- TODO to control log level to for netty -->

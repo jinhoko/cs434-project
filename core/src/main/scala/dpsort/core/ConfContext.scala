@@ -37,13 +37,17 @@ abstract class ConfContext extends Conf with Logging {
 
   override def set(property: String, value: String): Unit = {
     handleInputPropertyValue(property, value)
-    logger.debug(s"setting property ${property}:${value}")
+    logger.debug(s"setting property ${property} => ${value}")
     configMap.put(property, value)
   }
 
-  def setByOverride(property: String, value: String) = {
+  def setByOverride(property: String, value: String): Unit = {
     handleInputPropertyValue(property, value)
-    get(property) // if key invalid, it wil throw NoSuchElementException
+    try {
+      get(property) // if key invalid, it wil throw NoSuchElementException
+    } catch {
+      case v: NoSuchElementException => return
+    }
     set(property, value)
   }
 
@@ -69,11 +73,12 @@ abstract class ConfContext extends Conf with Logging {
   }
 
   protected def loadFromUserDefinedProperties( fileName: String ) = {
-
-    // TODO write to load from user file.
-    // if file not found just return
-    // call setOverride
-    // exception handling and debug.
+    val source = Source.fromFile( fileName )
+    val properties = new Properties()
+    properties.load(source.bufferedReader())
+    // load properties into configMap
+    properties.stringPropertyNames().toArray(Array[String]())
+      .map( pName => setByOverride(pName, properties.getProperty(pName)) )
   }
 
 }

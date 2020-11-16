@@ -9,7 +9,7 @@ object TaskStatus extends Enumeration {
   val WAITING, SUBMITTED, SUCCESS, FAILURE = Value
 }
 
-trait Task extends Logging {
+trait Task {
   val id : Int
   var status : TaskStatus.Value
   val inputPartition : Unit // TODO define type (there can be both cases of task)
@@ -36,7 +36,7 @@ abstract class BaseTask( i: Int,
                          st: TaskStatus.Value,
                          inputPart: Unit,
                          outputPart: Unit
-                       ) extends Task with Serializable {
+                       ) extends Task with Serializable with Logging {
 
   val id: Int = i
   var status: TaskStatus.Value = st

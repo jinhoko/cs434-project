@@ -41,6 +41,7 @@ done
 ###########################
 [ -z $1 ] && echo "Error: Argument <NUM_SLAVES> missing" && exit 1
 [ "$1" -ge 1 ] 2>/dev/null || (echo "Error: Invalid argument <NUM_SLAVES>: ${1}" && exit 1)
+num_slaves=$1
 
 ################
 ### Check OS ###
@@ -84,7 +85,7 @@ export DPSORT_SCALA_VERSION="2.12"
 export DPSORT_VERSION="0.1.0"
 
 sbt -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.xml \
-master/run
+"master/run ${num_slaves}"
 
 #java -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.xml \
 #-jar $DPSORT_HOME/master/target/scala-${DPSORT_SCALA_VERSION}/master-assembly-${DPSORT_VERSION}-SNAPSHOT.jar \
