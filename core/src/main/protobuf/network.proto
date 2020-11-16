@@ -43,7 +43,7 @@ message TaskMsg {
   enum TaskObjectType {
     GenBlockTask = 0;
     TerminateTask = 1;
-    // TODO write fully.
+    // and another 4 tasks
   }
   bytes serializedTaskObject = 1;
 }
@@ -53,9 +53,9 @@ message TaskReportMsg {
     SUCCESS = 0;
     FAILED = 1;
   }
-  // Simply handling taskId and its result will be enough.
   int32 taskId = 1;
   TaskResultType taskResult = 2;
+  bytes serializedTaskResultData = 3;
 }
 
 message ResponseMsg {
