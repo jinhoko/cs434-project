@@ -28,8 +28,8 @@ $ bash bin/worker M_IP:M_PORT -I I_DIR1 I_DIR2 I_DIR3 -O O_DIR
 | idx | Name                 | Due               | Status      | Comment |
 |-----|----------------------|-------------------|-------------|---------|
 | 1   | Project milestone 1  | 10월 19일 11:59pm | Finished     |         |
-| 2   | Project milestone 2  | 11월 16일 11:59pm | On Progress |         |
+| 2   | Project milestone 2  | 11월 16일 11:59pm | Finished   |         |
 | 3   | Project final report | 12월 14일 11:59pm | Not started |         |
 
-*(recent update : 10 Nov )*
+*(recent update : 16 Nov )*
 
