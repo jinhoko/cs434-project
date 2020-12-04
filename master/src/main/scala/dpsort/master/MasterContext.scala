@@ -2,6 +2,8 @@ package dpsort.master
 
 import dpsort.core.execution.Role
 import dpsort.master.MasterConf
+import dpsort.core.execution._
+import dpsort.master.execution.{EmptyStage, StageExitStatus}
 import org.apache.logging.log4j.scala.Logging
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -9,6 +11,10 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
 object MasterContext extends Role with Logging {
+
+  var lastStageExitStatus = StageExitStatus.SUCCESS
+  lazy val channelMap = Unit // TODO workerMetastore.getallIDs.blabla
+
 
   override def initialize = {
     // Start networking services
@@ -32,7 +38,15 @@ object MasterContext extends Role with Logging {
     val workerRegistryWait = Await.result(workerRegistryWaitCondition, Duration.Inf )
     logger.info(s"all ${MasterParams.NUM_SLAVES_INT} workers registered")
 
+    // generate ChannelMap
+
+    // dev : EmptyStage
+    val stage0 = new EmptyStage
+    lastStageExitStatus = stage0.executeAndWaitForTermination()
+
     // Execute GenBlockStage
+//    val stage1 = new GenBlockStage
+//    lastStageExitStatus = stage1.executeAndWaitForTermination()
 
     // Execute LocalSortStage
 
@@ -40,7 +54,7 @@ object MasterContext extends Role with Logging {
 
     // Execute PartitionAndShuffleStage
 
-    // Execute MergeStage
+    // Execute MergeStage (iterate)
 
     // Execute TerminateStage
 
