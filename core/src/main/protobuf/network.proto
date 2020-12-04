@@ -60,8 +60,9 @@ message TaskReportMsg {
 
 message ResponseMsg {
   enum ResponseType {
-    NORMAL = 0;
-    HANDLE_ERROR = 1;
+    NORMAL = 0;           // Request accepted by server
+    HANDLE_ERROR = 1;     // Error occured when handling request from server side
+    REQUEST_ERROR = 2;    // Error occured when trying to request
   }
   ResponseType response = 1;
 }

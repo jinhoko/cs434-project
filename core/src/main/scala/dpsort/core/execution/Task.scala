@@ -65,14 +65,12 @@ final class TerminateTask( i: Int,
                      outputPart: Unit
                    ) extends BaseTask(i, st, inputPart, outputPart) with Serializable {
 
-  override def run(): Unit = {
+  def run() = {
 
   }
-  val a = 1
-  val aa = new collection.mutable.HashMap[String, String]()
-  aa.put("se", "See")
-  aa.put("he", "heeeee")
 }
+
+
 
 // TODO other tasks as well
 // serialization : https://alvinalexander.com/scala/how-to-use-serialization-in-scala-serializable-trait/

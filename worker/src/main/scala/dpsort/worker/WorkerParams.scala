@@ -14,7 +14,6 @@ object WorkerParams extends Params with Logging {
 
   // Set parameters. OK to throw exceptions
   protected override def setParams ( params: Array[String] ): Unit = {
-    println(params.mkString(" "))
     MASTER_IP_STR = params(0)
     MASTER_PORT_INT = params(1).toInt
     OUTPUT_DIR_STR = params(2)

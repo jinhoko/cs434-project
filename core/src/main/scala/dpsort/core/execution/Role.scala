@@ -1,6 +1,6 @@
 package dpsort.core.execution
 
-trait RoleContext {
+trait Role {
   def initialize : Unit
   def execute : Unit
   def terminate : Unit
