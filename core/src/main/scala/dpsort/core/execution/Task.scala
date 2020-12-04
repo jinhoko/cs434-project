@@ -23,27 +23,36 @@ trait Task {
 
 /*
  * SerialVersionUID
- * - 1000L : BaseTask
+ * - 1000L : EmptyTask
  * - 1001L : GenBlockTask
  * - 1002L : TerminateTask
- * - 1003L :
+ * - 1003L : PartitionAndShuffleTask
  * - 1004L :
  * - 1005L :
  */
 
-@SerialVersionUID(1000L)
 abstract class BaseTask( i: Int,
                          st: TaskStatus.Value,
                          inputPart: Unit,
                          outputPart: Unit
                        ) extends Task with Serializable with Logging {
-
   val id: Int = i
   var status: TaskStatus.Value = st
   val inputPartition: Unit = inputPart
   val outputPartition: Unit = outputPart
 }
 
+
+// Not used in practice. Just for development purpose.
+@SerialVersionUID(1000L)
+final class EmptyTask( i: Int,
+                       st: TaskStatus.Value,
+                       inputPart: Unit,
+                       outputPart: Unit
+                     ) extends BaseTask(i, st, inputPart, outputPart) with Serializable {
+
+  def run = {} // todo wait 5s
+}
 
 @SerialVersionUID(1001L)
 final class GenBlockTask(  i: Int,
@@ -52,10 +61,7 @@ final class GenBlockTask(  i: Int,
                      outputPart: Unit
                    ) extends BaseTask(i, st, inputPart, outputPart) with Serializable {
 
-  override def run(): Unit = {
-
-  }
-
+  def run() = GenBlockContext.run( this )
 }
 
 @SerialVersionUID(1002L)
@@ -65,11 +71,21 @@ final class TerminateTask( i: Int,
                      outputPart: Unit
                    ) extends BaseTask(i, st, inputPart, outputPart) with Serializable {
 
-  def run() = {
-
-  }
+  def run() = TerminateContext.run( this )
 }
 
+@SerialVersionUID(1002L)
+final class PartitionAndShuffleTask( i: Int,
+                                     st: TaskStatus.Value,
+                                     inputPart: Unit,
+                                     outputPart: Unit,
+                                     partitionFunc: Unit  // todo type?
+                         ) extends BaseTask(i, st, inputPart, outputPart) with Serializable {
+
+  val partitioningFunction = partitionFunc
+
+  def run() = PartitionAndShuffleContext.run( this )
+}
 
 
 // TODO other tasks as well

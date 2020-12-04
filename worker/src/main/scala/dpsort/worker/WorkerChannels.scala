@@ -20,7 +20,7 @@ object WorkerChannels extends Logging {
     try {
       val response = masterTaskBlockingStub.registerWorker(request)
       response
-    } catch { // TODO current failure policy too strict. needs relaxation
+    } catch {
       case e: StatusRuntimeException =>
         logger.error(s"RPC failed: ${e.getStatus.toString}")
         new ResponseMsg( ResponseMsg.ResponseType.REQUEST_ERROR )
@@ -31,8 +31,6 @@ object WorkerChannels extends Logging {
 
 
 }
-
-// TODO channel shutdown?
 //
 //  def shutdown(): Unit = {
 //    channel.shutdown.awaitTermination(5, TimeUnit.SECONDS)
