@@ -1,6 +1,6 @@
 package dpsort.master
 
-import dpsort.core.execution.RoleContext
+import dpsort.core.execution.Role
 import dpsort.master.MasterConf
 import org.apache.logging.log4j.scala.Logging
 
@@ -8,7 +8,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
-object MasterContext extends RoleContext with Logging {
+object MasterContext extends Role with Logging {
 
   override def initialize = {
     // Start networking services
@@ -30,7 +30,6 @@ object MasterContext extends RoleContext with Logging {
       }
     }
     val workerRegistryWait = Await.result(workerRegistryWaitCondition, Duration.Inf )
-
     logger.info(s"all ${MasterParams.NUM_SLAVES_INT} workers registered")
 
     // Execute GenBlockStage

@@ -81,4 +81,8 @@ abstract class ConfContext extends Conf with Logging {
       .map( pName => setByOverride(pName, properties.getProperty(pName)) )
   }
 
+  override def toString: String = {
+    return configMap.toString
+  }
+
 }

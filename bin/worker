@@ -142,11 +142,17 @@ function getAbsPath {
 ###########################################
 getAbsPath $outputdir $platform
 outputdir=$getAbsPath_result
+
 for i in "${!inputdirs[@]}"; do
     getAbsPath ${inputdirs[i]} $platform
     inputdirs[i]=$getAbsPath_result
 done
 
+########################
+### Empty output dir ###
+#########################
+rm -rf $outputdir
+mkdir $outputdir
 
 #######################
 ### Set DPSORT_HOME ###

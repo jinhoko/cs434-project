@@ -22,8 +22,8 @@ object WorkerChannels extends Logging {
       response
     } catch { // TODO current failure policy too strict. needs relaxation
       case e: StatusRuntimeException =>
-        logger.warn(s"RPC failed: ${e.getStatus.toString}")
-        throw e
+        logger.error(s"RPC failed: ${e.getStatus.toString}")
+        new ResponseMsg( ResponseMsg.ResponseType.REQUEST_ERROR )
     }
   }
 

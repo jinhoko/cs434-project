@@ -25,6 +25,18 @@ object FileUtils extends Logging {
     file.exists && file.isFile
   }
 
+  def makeDirectory( dirPath:String ) = {
+    val a = new File(dirPath).mkdir()
+  }
+
+  def createAndClearDirectory( dirPath: String ): Unit = {
+    val dir = new File(dirPath)
+    if( ! dir.exists() ) {
+      dir.mkdir()
+    }
+    dir.listFiles.foreach( _.delete() )
+  }
+
   def getFilesInDirectory( dirPath: String ): Seq[String] = {
     val dir = new File(dirPath)
     if (dir.exists && dir.isDirectory) {
@@ -32,6 +44,10 @@ object FileUtils extends Logging {
     } else {
       Seq[String]()
     }
+  }
+
+  def getNumLinesInFile( filePath: String ): Int = {
+    Source.fromFile(filePath).getLines.size
   }
 
 }
