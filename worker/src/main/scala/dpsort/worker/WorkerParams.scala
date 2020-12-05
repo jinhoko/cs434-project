@@ -21,4 +21,6 @@ object WorkerParams extends Params with Logging {
       .flatMap( getFilesInDirectory ).distinct
   }
 
+  lazy val MASTER_IP_PORT:(String, Int) = (MASTER_IP_STR, MASTER_PORT_INT)
+
 }

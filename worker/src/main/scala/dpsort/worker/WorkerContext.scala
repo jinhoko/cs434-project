@@ -2,12 +2,13 @@ package dpsort.worker
 
 import dpsort.core.Registry
 import dpsort.core.execution.Role
-import dpsort.core.network.{RegistryMsg, ResponseMsg}
+import dpsort.core.network.ResponseMsg.ResponseType
+import dpsort.core.network.{ChannelMap, RegistryMsg, ResponseMsg}
+import dpsort.worker.MasterReqChannel
 import dpsort.core.utils.SerializationUtils._
 import dpsort.worker.WorkerConf._
 import dpsort.core.storage.PartitionMeta
 import dpsort.core.utils.FileUtils
-import javax.xml.crypto.dsig.spec.ExcC14NParameterSpec
 import org.apache.logging.log4j.scala.Logging
 
 object WorkerContext extends Role {
@@ -16,7 +17,7 @@ object WorkerContext extends Role {
     // Start networking services
     WorkerTaskServer.startServer
     // Open worker channels
-    WorkerChannels
+    ChannelMap.addChannel( WorkerParams.MASTER_IP_PORT , new MasterReqChannel( WorkerParams.MASTER_IP_PORT ) )
     // Start taskmanager threads TODO
 
     // Set working directory
@@ -30,10 +31,12 @@ object WorkerContext extends Role {
 
   override def execute: Unit = {
     // Start shuffle channel TODO
-
+    /* */
     // Register worker to master
-    val registryResponse: ResponseMsg = WorkerChannels.registerWorker(genRegistry)
-    if( registryResponse != ResponseMsg.ResponseType.NORMAL ) { return; }
+    val masReqChn:MasterReqChannel = ChannelMap.getChannel(WorkerParams.MASTER_IP_PORT)
+      .asInstanceOf[MasterReqChannel]
+    val registryResponse: ResponseMsg = masReqChn.registerWorker( genRegistry )
+    if( registryResponse.response != ResponseType.NORMAL ) { return; }
 
     // Start heartbeat channel TODO
 

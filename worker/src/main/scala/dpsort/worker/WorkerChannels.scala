@@ -1,6 +1,7 @@
 package dpsort.worker
 
 import dpsort.worker.WorkerParams
+import dpsort.core.network.Channel
 import dpsort.core.network.MasterTaskServiceGrpc
 import dpsort.core.network.{RegistryMsg, ResponseMsg}
 
@@ -8,13 +9,17 @@ import io.grpc.{StatusRuntimeException, ManagedChannelBuilder, ManagedChannel}
 
 import org.apache.logging.log4j.scala.Logging
 
-object WorkerChannels extends Logging {
+class MasterReqChannel( ipPort: (String, Int) ) extends Channel with Logging {
 
-  val masterTaskChannel = ManagedChannelBuilder
-    .forAddress(WorkerParams.MASTER_IP_STR, WorkerParams.MASTER_PORT_INT)
+  override val channel = masterTaskChannel
+  override val stub = masterTaskBlockingStub
+  override def request: RegistryMsg => ResponseMsg = registerWorker
+
+  private val masterTaskChannel = ManagedChannelBuilder
+    .forAddress( ipPort._1, ipPort._2 )
     .usePlaintext.build
 
-  val masterTaskBlockingStub = MasterTaskServiceGrpc.blockingStub(masterTaskChannel)
+  private val masterTaskBlockingStub = MasterTaskServiceGrpc.blockingStub(masterTaskChannel)
 
   def registerWorker(request: RegistryMsg): ResponseMsg = {
     try {
@@ -26,11 +31,16 @@ object WorkerChannels extends Logging {
         new ResponseMsg( ResponseMsg.ResponseType.REQUEST_ERROR )
     }
   }
-
-  // TODO heartbeatchannel
-
-
 }
+
+//class ShuffleReqChannel( ipPort: (String, Int) ) extends Channel with Logging {
+//
+//  override def channel: Any = ???
+//  override val stub: Any = _
+//  override def request: Any = ???
+//}
+
+
 //
 //  def shutdown(): Unit = {
 //    channel.shutdown.awaitTermination(5, TimeUnit.SECONDS)

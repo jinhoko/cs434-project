@@ -1,12 +1,9 @@
 package dpsort.master
 
 import com.google.protobuf.ByteString
-import dpsort.core.network.MasterTaskServiceGrpc
-import dpsort.core.network.{RegistryMsg, ResponseMsg, TaskReportMsg}
-import dpsort.core.network.{ServerContext, ServerInterface}
+import dpsort.core.network.{ChannelMap, MasterTaskServiceGrpc, RegistryMsg, ResponseMsg, ServerContext, ServerInterface, TaskReportMsg}
 import dpsort.core.Registry
 import dpsort.core.storage.PartitionMeta
-
 import dpsort.core.utils.IdUtils
 import dpsort.core.utils.SerializationUtils._
 import dpsort.master.MasterConf._
@@ -34,17 +31,18 @@ private class MasterTaskServiceImpl extends MasterTaskServiceGrpc.MasterTaskServ
 
     val bytestr: ByteString = request.serializedRegistryObject
     val registry: Registry = deserializeByteStringToObject[Registry](bytestr)
-    if ( ! isDistinctRegistry( registry ) ) {
-      logger.info(s"Worker registry from ${registry.IP}:${registry.PORT} failed.")
-      Future.successful( new ResponseMsg( ResponseMsg.ResponseType.HANDLE_ERROR ))
-    }
-    else {
+    if ( isDistinctRegistry( registry ) ) {
       // Register object
       registry._WORKER_ID = WorkerMetaStore.addRegistry( registry )
       registry.INPUT_FILES.foreach( addPartitionMeta(registry._WORKER_ID, _) )
       logger.info(s"Worker id: ${ WorkerMetaStore.getWorkerNum } from ${registry.IP_PORT} registered. " +
         s"${  WorkerMetaStore.getWaitingWorkersNum } remaining.")
+      ChannelMap.addChannel( registry.IP_PORT, new TaskReqChannel( registry.IP_PORT ))
       Future.successful( new ResponseMsg( ResponseMsg.ResponseType.NORMAL ) )
+    }
+    else {
+      logger.info(s"Worker registry from ${registry.IP}:${registry.PORT} failed.")
+      Future.successful( new ResponseMsg( ResponseMsg.ResponseType.HANDLE_ERROR ))
     }
   }
 

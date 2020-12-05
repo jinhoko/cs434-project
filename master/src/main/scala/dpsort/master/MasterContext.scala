@@ -1,7 +1,6 @@
 package dpsort.master
 
 import dpsort.core.execution.Role
-import dpsort.master.MasterConf
 import dpsort.core.execution._
 import dpsort.master.execution.{EmptyStage, StageExitStatus}
 import org.apache.logging.log4j.scala.Logging
@@ -31,14 +30,12 @@ object MasterContext extends Role with Logging {
 
     logger.info(s"waiting for workers")
     val workerRegistryWaitCondition = Future {
-      while( WorkerMetaStore.getWaitingWorkersNum >0 ) {
+      while( WorkerMetaStore.getWaitingWorkersNum > 0 ) {
         Thread.sleep(1000)
       }
     }
     val workerRegistryWait = Await.result(workerRegistryWaitCondition, Duration.Inf )
     logger.info(s"all ${MasterParams.NUM_SLAVES_INT} workers registered")
-
-    // generate ChannelMap
 
     // dev : EmptyStage
     val stage0 = new EmptyStage
