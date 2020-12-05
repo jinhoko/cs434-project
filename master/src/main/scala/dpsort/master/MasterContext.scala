@@ -2,7 +2,7 @@ package dpsort.master
 
 import dpsort.core.execution.Role
 import dpsort.core.execution._
-import dpsort.master.execution.{EmptyStage, StageExitStatus}
+import dpsort.master.execution.{EmptyStage, StageExitStatus, TerminateStage}
 import org.apache.logging.log4j.scala.Logging
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -39,11 +39,8 @@ object MasterContext extends Role with Logging {
     val stage0 = new EmptyStage
     lastStageExitStatus = stage0.executeAndWaitForTermination()
 
-    val stage1 = new EmptyStage
+    val stage1 = new TerminateStage
     lastStageExitStatus = stage1.executeAndWaitForTermination()
-
-    val stage2 = new EmptyStage
-    lastStageExitStatus = stage2.executeAndWaitForTermination()
 
     // Execute GenBlockStage
 //    val stage1 = new GenBlockStage
