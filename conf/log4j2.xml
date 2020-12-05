@@ -16,7 +16,7 @@
         <RollingFile name="file" fileName="./log/${logNm}.log" filePattern="./log/logs/${logNm}_%d{yyyy-MM-dd}_%i.log">
             <PatternLayout pattern="${layoutPattern}" />
             <Policies>
-                <SizeBasedTriggeringPolicy size="10MB" /> <!-- 이 용량이 초과되면 아래 DefaultRolloverStrategy 정책만큼 넘버링 할거다. -->
+                <SizeBasedTriggeringPolicy size="10MB" />
             </Policies>
             <DefaultRolloverStrategy max="1000" fileIndex="min" />
         </RollingFile>
@@ -26,7 +26,7 @@
             <appender-ref ref="console" />
             <appender-ref ref="file" />
         </root>
-        <logger name="dpsort" level="trace" additivity="false" >
+        <logger name="dpsort" level="info" additivity="false" >
             <appender-ref ref="console" />
             <appender-ref ref="file" />
         </logger>
