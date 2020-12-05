@@ -18,7 +18,7 @@ trait Task {
   def getId : Int = { id }
   def getStatus : TaskStatus.Value = { status }
   def setStatus(st : TaskStatus.Value): Unit = { status = st }
-  def run : Unit // TODO define type
+  def run : Unit
 }
 
 /*
@@ -51,7 +51,7 @@ final class EmptyTask( i: Int,
                        outputPart: Unit
                      ) extends BaseTask(i, st, inputPart, outputPart) with Serializable {
 
-  def run = {} // todo wait 5s
+  def run = { println("emptytask : wait for 5s and finish"); Thread.sleep(5000) }
 }
 
 @SerialVersionUID(1001L)

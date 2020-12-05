@@ -1,9 +1,9 @@
 package dpsort.master.execution
 
-import dpsort.core.execution.{TaskResult, TaskStatus}
+import dpsort.core.execution._
 import dpsort.core.network.TaskReportMsg
 import dpsort.core.network.TaskReportMsg.TaskResultType
-import dpsort.master.TaskRunner
+import dpsort.master.{PartitionMetaStore, TaskRunner}
 import dpsort.master.TaskRunner._
 import org.apache.logging.log4j.scala.Logging
 
@@ -25,7 +25,7 @@ trait Stage extends Logging {
       case TaskResultType.SUCCESS => TaskStatus.SUCCESS
       case TaskResultType.FAILED  => TaskStatus.FAILURE
     }
-    stageTaskSet.findTask( taskRes.taskId ).setStatus( taskResultStatus )
+    stageTaskSet.getTask( taskRes.taskId ).setStatus( taskResultStatus )
   }
   def toString: String
 
@@ -37,7 +37,9 @@ trait Stage extends Logging {
       return StageExitStatus.FAILURE
     }
     logger.info(s"Executing stage ${this.toString}...")
+
     val stageExitCode: Int = Await.result( executeStage, Duration.Inf )
+
     logger.info(s"Stage ${this.toString} exited with code ${stageExitCode}")
     val stageExitStatus = stageExitCode match  {
       case 0 => {
@@ -57,9 +59,12 @@ trait Stage extends Logging {
 class EmptyStage extends Stage {
   override def toString: String = "EmptyStage"
   override protected def genTaskSet(): TaskSet = {
-    // TODO write
     // scan PMS
-    // make TaskSet Object and return
+    val taskSeq: Iterable[BaseTask] = {
+      for ( wid <- PartitionMetaStore.getWorkerIds )
+        yield new EmptyTask(wid, TaskStatus.WAITING, Unit, Unit)
+    }
+    new TaskSet( taskSeq )
   }
 }
 

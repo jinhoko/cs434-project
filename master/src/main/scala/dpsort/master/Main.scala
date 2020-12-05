@@ -1,7 +1,5 @@
 package dpsort.master
 
-import dpsort.master.MasterParams
-
 import org.apache.logging.log4j.scala.Logging
 
 
