@@ -9,15 +9,25 @@ import org.apache.logging.log4j.scala.Logging
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import scala.util.Random
 
 object StageExitStatus extends Enumeration {
   val SUCCESS, FAILURE = Value
 }
 
 trait Stage extends Logging {
+
   protected val stageTaskSet: TaskSet = genTaskSet()
 
   protected def genTaskSet(): TaskSet
+
+  def taskSetIterator: Iterator[BaseTask] = stageTaskSet.getIterator
+
+  def terminateCondition: Boolean = stageTaskSet.isAllTasksFinished
+  def stageResult: Boolean = stageTaskSet.isAllTasksSucceeded
+
+  def toString: String
+
   def taskResultHandler( taskRes: TaskReportMsg ): Unit = {
     // override 필요한 놈이 있음 , (sample 경우 필요) -> super.호출하고 그다음 진행
     // TODO if success update PMS
@@ -27,12 +37,11 @@ trait Stage extends Logging {
     }
     stageTaskSet.getTask( taskRes.taskId ).setStatus( taskResultStatus )
   }
-  def toString: String
 
   def executeAndWaitForTermination(): StageExitStatus.Value = {
     logger.info(s"Register stage ${this.toString}.")
     val registerResult = TaskRunner.registerStage(this )
-    if( registerResult == false ) {
+    if( !registerResult ) {
       logger.error(s"Cannot register stage to TaskRunner")
       return StageExitStatus.FAILURE
     }
@@ -54,6 +63,7 @@ trait Stage extends Logging {
     stageExitStatus
   }
 
+
 }
 
 class EmptyStage extends Stage {
@@ -62,9 +72,11 @@ class EmptyStage extends Stage {
     // scan PMS
     val taskSeq: Iterable[BaseTask] = {
       for ( wid <- PartitionMetaStore.getWorkerIds )
-        yield new EmptyTask(wid, TaskStatus.WAITING, Unit, Unit)
+        // todo task ID generator!!
+        yield new EmptyTask(wid, wid, TaskStatus.WAITING, Unit, Unit)
     }
-    new TaskSet( taskSeq )
+    logger.info(s"${taskSeq.size} task(s) generated")
+    new TaskSet( Random.shuffle( taskSeq ) ) // for fair scheduling
   }
 }
 

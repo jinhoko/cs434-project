@@ -33,9 +33,9 @@ object WorkerContext extends Role {
     // Start shuffle channel TODO
     /* */
     // Register worker to master
-    val masReqChn:MasterReqChannel = ChannelMap.getChannel(WorkerParams.MASTER_IP_PORT)
+    val reqChannel: MasterReqChannel = ChannelMap.getChannel(WorkerParams.MASTER_IP_PORT)
       .asInstanceOf[MasterReqChannel]
-    val registryResponse: ResponseMsg = masReqChn.registerWorker( genRegistry )
+    val registryResponse: ResponseMsg = reqChannel.registerWorker( genRegistry )
     if( registryResponse.response != ResponseType.NORMAL ) { return; }
 
     // Start heartbeat channel TODO
