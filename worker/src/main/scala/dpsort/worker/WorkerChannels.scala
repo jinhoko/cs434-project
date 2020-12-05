@@ -1,25 +1,17 @@
 package dpsort.worker
 
 import dpsort.worker.WorkerParams
-import dpsort.core.network.Channel
-import dpsort.core.network.MasterTaskServiceGrpc
-import dpsort.core.network.{RegistryMsg, ResponseMsg}
-
-import io.grpc.{StatusRuntimeException, ManagedChannelBuilder, ManagedChannel}
-
+import dpsort.core.network.{Channel, MasterTaskServiceGrpc, RegistryMsg, ResponseMsg, TaskReportMsg}
+import io.grpc.{ManagedChannel, ManagedChannelBuilder, StatusRuntimeException}
 import org.apache.logging.log4j.scala.Logging
 
 class MasterReqChannel( ipPort: (String, Int) ) extends Channel with Logging {
-
-  override val channel = masterTaskChannel
-  override val stub = masterTaskBlockingStub
-  override def request: RegistryMsg => ResponseMsg = registerWorker
 
   private val masterTaskChannel = ManagedChannelBuilder
     .forAddress( ipPort._1, ipPort._2 )
     .usePlaintext.build
 
-  private val masterTaskBlockingStub = MasterTaskServiceGrpc.blockingStub(masterTaskChannel)
+  private val masterTaskBlockingStub = MasterTaskServiceGrpc.blockingStub( masterTaskChannel )
 
   def registerWorker(request: RegistryMsg): ResponseMsg = {
     try {
@@ -28,6 +20,17 @@ class MasterReqChannel( ipPort: (String, Int) ) extends Channel with Logging {
     } catch {
       case e: StatusRuntimeException =>
         logger.error(s"RPC failed: ${e.getStatus.toString}")
+        new ResponseMsg( ResponseMsg.ResponseType.REQUEST_ERROR )
+    }
+  }
+
+  def reportTaskResult( request: TaskReportMsg ): ResponseMsg = {
+    try {
+      val response = masterTaskBlockingStub.reportTaskResult(request)
+      response
+    } catch {
+      case e: StatusRuntimeException =>
+        logger.error(s"Task report failed: ${e.getStatus.toString}")
         new ResponseMsg( ResponseMsg.ResponseType.REQUEST_ERROR )
     }
   }

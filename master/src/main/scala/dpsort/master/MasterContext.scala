@@ -12,8 +12,6 @@ import scala.concurrent.{Await, Future}
 object MasterContext extends Role with Logging {
 
   var lastStageExitStatus = StageExitStatus.SUCCESS
-  lazy val channelMap = Unit // TODO workerMetastore.getallIDs.blabla
-
 
   override def initialize = {
     // Start networking services
@@ -40,6 +38,12 @@ object MasterContext extends Role with Logging {
     // dev : EmptyStage
     val stage0 = new EmptyStage
     lastStageExitStatus = stage0.executeAndWaitForTermination()
+
+    val stage1 = new EmptyStage
+    lastStageExitStatus = stage1.executeAndWaitForTermination()
+
+    val stage2 = new EmptyStage
+    lastStageExitStatus = stage2.executeAndWaitForTermination()
 
     // Execute GenBlockStage
 //    val stage1 = new GenBlockStage

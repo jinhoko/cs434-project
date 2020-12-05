@@ -6,21 +6,20 @@ import org.apache.logging.log4j.scala.Logging
 // TaskSet is simply a set of BaseTask objects.
 class TaskSet( ts: Iterable[BaseTask] ) extends Logging{
 
-  private val taskSet: Set[BaseTask] = ts.toSet
+  val taskSet: Set[BaseTask] = ts.toSet
 
-  def getIterator: Iterator[BaseTask] = taskSet.toIterator
-
+  def getNumTasks: Int = taskSet.size
   def getTask( tid: Int ): BaseTask = {
-    val foundTask: Option[BaseTask] = taskSet.find( _.id == tid )
-    foundTask match {
-      case t:BaseTask => t
-      case _ => {
-        logger.error("task not found")
-        throw new NullPointerException()
+    for( t <- taskSet ) {
+      if( t.getId == tid ) {
+        return t
       }
     }
+    throw new NullPointerException()
   }
 
+  def getNumFinishedTasks: Int = taskSet.count( _.isFinished )
+  def getNumRemainingTasks: Int = taskSet.count( ! _.isFinished )
   def isAllTasksFinished: Boolean = {
     taskSet.map( _.isFinished ).reduce( (a, b) => a && b )
   }

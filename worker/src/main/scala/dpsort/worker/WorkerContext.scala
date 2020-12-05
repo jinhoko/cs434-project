@@ -11,15 +11,13 @@ import dpsort.core.storage.PartitionMeta
 import dpsort.core.utils.FileUtils
 import org.apache.logging.log4j.scala.Logging
 
-object WorkerContext extends Role {
+object WorkerContext extends Role with Logging {
 
   override def initialize: Unit = {
     // Start networking services
     WorkerTaskServer.startServer
     // Open worker channels
     ChannelMap.addChannel( WorkerParams.MASTER_IP_PORT , new MasterReqChannel( WorkerParams.MASTER_IP_PORT ) )
-    // Start taskmanager threads TODO
-
     // Set working directory
     initWorkDir
   }
@@ -31,17 +29,21 @@ object WorkerContext extends Role {
 
   override def execute: Unit = {
     // Start shuffle channel TODO
-    /* */
     // Register worker to master
-    val reqChannel: MasterReqChannel = ChannelMap.getChannel(WorkerParams.MASTER_IP_PORT)
+    val reqChannel: MasterReqChannel = ChannelMap.getChannel( WorkerParams.MASTER_IP_PORT )
       .asInstanceOf[MasterReqChannel]
+    logger.info(s"trying to register worker via channel : ${reqChannel}")
     val registryResponse: ResponseMsg = reqChannel.registerWorker( genRegistry )
-    if( registryResponse.response != ResponseType.NORMAL ) { return; }
+    if( registryResponse.response != ResponseType.NORMAL ) {
+      logger.error("registration failure")
+      return;
+    }
+    logger.info("registration done")
 
     // Start heartbeat channel TODO
 
-    // Start taskmonitor TODO
-
+    // Start TaskManager
+    TaskManager.taskManagerContext()
   }
 
   private def genRegistry() = {

@@ -6,10 +6,6 @@ import org.apache.logging.log4j.scala.Logging
 
 class TaskReqChannel( ipPort: (String, Int) ) extends Channel with Logging {
 
-  override def channel = taskReqChannel
-  override val stub: Any = workerTaskBlockingStub
-  override def request: TaskMsg => ResponseMsg = requestTask
-
   private val taskReqChannel = ManagedChannelBuilder
     .forAddress( ipPort._1, ipPort._2 )
     .usePlaintext.build

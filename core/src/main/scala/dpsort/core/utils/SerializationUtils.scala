@@ -26,12 +26,14 @@ object SerializationUtils extends Logging {
     val ois = new ObjectInputStream(stream)
     val outputObj = ois.readObject().asInstanceOf[T]
     ois.close()
-    logger.debug(s"dserialization of object type: ${ outputObj.getClass.getTypeName } success")
+    logger.debug(s"deserialization of object type: ${ outputObj.getClass.getTypeName } success")
     outputObj
   }
   def deserializeByteStringToObject[T]( byteStr: ByteString ): T = {
     assert( byteStr.size != 0 )
     deserializeByteArrayToObject( byteStr.toByteArray )
   }
+
+  def getEmptyByteString: ByteString = serializeObjectToByteString( "NULL-OBJECT" )
 
 }

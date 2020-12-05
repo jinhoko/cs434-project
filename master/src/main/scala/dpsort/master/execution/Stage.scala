@@ -3,6 +3,7 @@ package dpsort.master.execution
 import dpsort.core.execution._
 import dpsort.core.network.TaskReportMsg
 import dpsort.core.network.TaskReportMsg.TaskResultType
+import dpsort.core.utils.IdUtils
 import dpsort.master.{PartitionMetaStore, TaskRunner}
 import dpsort.master.TaskRunner._
 import org.apache.logging.log4j.scala.Logging
@@ -18,13 +19,16 @@ object StageExitStatus extends Enumeration {
 trait Stage extends Logging {
 
   protected val stageTaskSet: TaskSet = genTaskSet()
+  logger.info(s"taskset generated with ${stageTaskSet.getNumTasks} task(s)")
 
   protected def genTaskSet(): TaskSet
 
-  def taskSetIterator: Iterator[BaseTask] = stageTaskSet.getIterator
+  def taskSet: Set[BaseTask] = stageTaskSet.taskSet
 
   def terminateCondition: Boolean = stageTaskSet.isAllTasksFinished
   def stageResult: Boolean = stageTaskSet.isAllTasksSucceeded
+  def numFinishedTasks: Int = stageTaskSet.getNumFinishedTasks
+  def numRemainingTasks: Int = stageTaskSet.getNumRemainingTasks
 
   def toString: String
 
@@ -62,8 +66,6 @@ trait Stage extends Logging {
     }
     stageExitStatus
   }
-
-
 }
 
 class EmptyStage extends Stage {
@@ -71,9 +73,9 @@ class EmptyStage extends Stage {
   override protected def genTaskSet(): TaskSet = {
     // scan PMS
     val taskSeq: Iterable[BaseTask] = {
-      for ( wid <- PartitionMetaStore.getWorkerIds )
-        // todo task ID generator!!
-        yield new EmptyTask(wid, wid, TaskStatus.WAITING, Unit, Unit)
+      for (i <- 0 to 29;
+           wid <- PartitionMetaStore.getWorkerIds)
+        yield new EmptyTask(IdUtils.genNewTaskID, wid, TaskStatus.WAITING, Unit, Unit)
     }
     logger.info(s"${taskSeq.size} task(s) generated")
     new TaskSet( Random.shuffle( taskSeq ) ) // for fair scheduling

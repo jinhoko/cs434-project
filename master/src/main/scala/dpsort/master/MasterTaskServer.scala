@@ -47,8 +47,9 @@ private class MasterTaskServiceImpl extends MasterTaskServiceGrpc.MasterTaskServ
   }
 
   override def reportTaskResult(request: TaskReportMsg): Future[ResponseMsg] = {
+    logger.debug(s"Task report arrived")
     TaskRunner.taskResultHandler( request )
-    val response = ResponseMsg( ResponseMsg.ResponseType.NORMAL)
+    val response = ResponseMsg( ResponseMsg.ResponseType.NORMAL )
     Future.successful( response )
   }
 }
