@@ -4,7 +4,7 @@ import dpsort.core.network.{Channel, MasterTaskServiceGrpc, RegistryMsg, Respons
 import io.grpc.{ManagedChannelBuilder, StatusRuntimeException}
 import org.apache.logging.log4j.scala.Logging
 
-class TaskReqChannel ( ipPort: (String, Int) ) extends Channel with Logging {
+class TaskReqChannel( ipPort: (String, Int) ) extends Channel with Logging {
 
   override def channel = taskReqChannel
   override val stub: Any = workerTaskBlockingStub

@@ -15,9 +15,7 @@ object PartitionMetaStore {
     partitionMetaStore(workerID).append( pmeta )
   }
 
-  def getWorkerIds( ): Iterable[Int] = {
-    partitionMetaStore.keys
-  }
+  def getWorkerIds( ): Iterable[Int] = { partitionMetaStore.keys }
 
   // TODO querying functions
 

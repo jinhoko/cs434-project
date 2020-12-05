@@ -40,11 +40,6 @@ message TaskMsg {
   // We send bytes-serialized object directly
   // rather than elaborate message definition
   // due to its complexity
-  enum TaskObjectType {
-    GenBlockTask = 0;
-    TerminateTask = 1;
-    // and another 4 tasks
-  }
   bytes serializedTaskObject = 1;
 }
 
