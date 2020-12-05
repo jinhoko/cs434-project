@@ -6,6 +6,7 @@ import java.io._
 import dpsort.core.network.TaskReportMsg.TaskResultType
 import org.apache.logging.log4j.scala.Logging
 
+// TODO need code clearing for this file!!
 
 object TaskStatus extends Enumeration {
   val WAITING, SUBMITTED, SUCCESS, FAILURE = Value
@@ -87,18 +88,18 @@ final class EmptyTask( i: Int,
 //
 //  def run() = GenBlockContext.run( this )
 //}
-//
-//@SerialVersionUID(1002L)
-//final class TerminateTask( i: Int,
-//                           wi: Int,
-//                           st: TaskStatus.Value,
-//                           inputPart: Unit,
-//                           outputPart: Unit
-//                   ) extends BaseTask(i, wi, st, inputPart, outputPart) with Serializable {
-//
-//  def run() = TerminateContext.run( this )
-//}
-//
+
+@SerialVersionUID(1002L)
+final class TerminateTask( i: Int,
+                           wi: Int,
+                           st: TaskStatus.Value,
+                           inputPart: Unit,
+                           outputPart: Unit
+                   ) extends BaseTask(i, wi, TaskType.TERMINATETASK, st, inputPart, outputPart) with Serializable {
+
+  def run() = TerminateContext.run( this )
+}
+
 //@SerialVersionUID(1002L)
 //final class PartitionAndShuffleTask( i: Int,
 //                                     wi: Int,

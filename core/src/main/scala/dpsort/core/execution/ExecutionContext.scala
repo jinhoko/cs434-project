@@ -14,11 +14,12 @@ import dpsort.core.execution._
 //  }
 //}
 //
-//object TerminateContext {
-//  def run( task: TerminateTask ) = {
-//
-//  }
-//}
-//
+
+object TerminateContext {
+  def run( task: TerminateTask ) = {
+    // TODO need to writeback to PMS
+  }
+}
+
 
 // TODO

@@ -3,8 +3,8 @@ package dpsort.core.utils
 
 object IdUtils {
 
-  private var recentTaskID = 0
-  private var recentPartID = 0
+  private[dpsort] var recentTaskID = 0
+  private[dpsort] var recentPartID = 0
 
   def genNewWorkerID( idSet: Set[Int] ) : Int = {
     idSet.size match {
@@ -22,15 +22,5 @@ object IdUtils {
     recentPartID += 1
     recentPartID
   }
-
-  // TODO generate others
-
-  //  def genNewPartitionID ( someparam(e.g. workerID?) ) : String = {
-//
-//  }
-
-//  def genNewTaskID ( someparam(e.g. current stage?) ) : Int = {
-//
-//  }
 
 }

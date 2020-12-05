@@ -71,13 +71,23 @@ trait Stage extends Logging {
 class EmptyStage extends Stage {
   override def toString: String = "EmptyStage"
   override protected def genTaskSet(): TaskSet = {
-    // scan PMS
     val taskSeq: Iterable[BaseTask] = {
-      for (i <- 0 to 29;
+      for (i <- 0 to 9;
            wid <- PartitionMetaStore.getWorkerIds)
         yield new EmptyTask(IdUtils.genNewTaskID, wid, TaskStatus.WAITING, Unit, Unit)
     }
     logger.info(s"${taskSeq.size} task(s) generated")
+    new TaskSet( Random.shuffle( taskSeq ) ) // for fair scheduling
+  }
+}
+
+class TerminateStage extends Stage {
+  override def toString: String = "TerminationStage"
+  override protected def genTaskSet(): TaskSet = {
+    val taskSeq: Iterable[BaseTask] = {
+      for ( wid <- PartitionMetaStore.getWorkerIds ) // TODO need to generate task for all partitions
+        yield new TerminateTask(IdUtils.genNewTaskID, wid, TaskStatus.WAITING, Unit, Unit)
+    }
     new TaskSet( Random.shuffle( taskSeq ) ) // for fair scheduling
   }
 }
