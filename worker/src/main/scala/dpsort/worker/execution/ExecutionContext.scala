@@ -16,6 +16,7 @@ object ExecCtxtFetcher {
       case TaskType.EMPTYTASK => EmptyContext
       case TaskType.GENBLOCKTASK => GenBlockContext
       case TaskType.TERMINATETASK => TerminateContext
+      case TaskType.LOCALSORTTASK => LocalSortContext
       // TODO write more
     }
   }
@@ -54,6 +55,15 @@ object GenBlockContext extends ExecutionContext with Logging {
         throw e
       }
     }
+  }
+
+}
+
+object LocalSortContext extends ExecutionContext with Logging {
+
+  def run(_task: BaseTask) = {
+    val task = _task.asInstanceOf[LocalSortTask]
+    // todo
   }
 
 }

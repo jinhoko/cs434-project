@@ -7,7 +7,6 @@ import org.apache.logging.log4j.scala.Logging
 
 /**
  * System PWD is set to $DPSORT_HOME
- * TODO write more
  */
 object FileUtils extends Logging {
 
