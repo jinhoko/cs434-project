@@ -3,8 +3,11 @@ package dpsort.master.execution
 import dpsort.core.execution._
 import dpsort.core.network.TaskReportMsg
 import dpsort.core.network.TaskReportMsg.TaskResultType
-import dpsort.core.utils.IdUtils
+import dpsort.core.utils.IdUtils._
+import dpsort.core.utils.PartitionUtils._
+import dpsort.core.utils.{IdUtils, PartitionUtils}
 import dpsort.master.{PartitionMetaStore, TaskRunner}
+import dpsort.master.MasterConf._
 import dpsort.master.TaskRunner._
 import org.apache.logging.log4j.scala.Logging
 
@@ -33,8 +36,6 @@ trait Stage extends Logging {
   def toString: String
 
   def taskResultHandler( taskRes: TaskReportMsg ): Unit = {
-    // override 필요한 놈이 있음 , (sample 경우 필요) -> super.호출하고 그다음 진행
-    // TODO if success update PMS
     val taskResultStatus = taskRes.taskResult match {
       case TaskResultType.SUCCESS => TaskStatus.SUCCESS
       case TaskResultType.FAILED  => TaskStatus.FAILURE
@@ -74,7 +75,7 @@ class EmptyStage extends Stage {
     val taskSeq: Iterable[BaseTask] = {
       for (i <- 0 to 9;
            wid <- PartitionMetaStore.getWorkerIds)
-        yield new EmptyTask(IdUtils.genNewTaskID, wid, TaskStatus.WAITING, Unit, Unit)
+        yield new EmptyTask(genNewTaskID, wid, TaskStatus.WAITING, Unit, Unit)
     }
     logger.info(s"${taskSeq.size} task(s) generated")
     new TaskSet( Random.shuffle( taskSeq ) ) // for fair scheduling
@@ -86,16 +87,44 @@ class TerminateStage extends Stage {
   override protected def genTaskSet(): TaskSet = {
     val taskSeq: Iterable[BaseTask] = {
       for ( wid <- PartitionMetaStore.getWorkerIds ) // TODO need to generate task for all partitions
-        yield new TerminateTask(IdUtils.genNewTaskID, wid, TaskStatus.WAITING, Unit, Unit)
+        yield new TerminateTask(genNewTaskID, wid, TaskStatus.WAITING, Unit, Unit)
     }
     new TaskSet( Random.shuffle( taskSeq ) ) // for fair scheduling
   }
+
 }
 
-//class GenBlockStage extends Stage {
-//
-//  override def toString: String = "GenBlockStage"
-//
-//  override protected def genTaskSet(): TaskSet = ???
-//}
-//
+class GenBlockStage extends Stage {
+
+  override def toString: String = "GenBlockStage"
+
+  override protected def genTaskSet(): TaskSet = {
+    val taskSeq: Iterable[BaseTask] = {
+      for ( wid <- PartitionMetaStore.getWorkerIds )
+        yield {
+          val parts = PartitionMetaStore.getPartitionList( wid )
+          parts.map( pMeta => {
+            val offsets: Array[(Int, Int)] = blockOffsetsGenerator( pMeta, get("dpsort.master.blocksizeinlines").toInt )
+            val outPNames: Array[String] = {1 to offsets.size}.toArray.map( _ => genNewPartID )
+            assert( offsets.size == outPNames.size )
+            new GenBlockTask( genNewTaskID, wid, TaskStatus.WAITING, pMeta.pName, outPNames, offsets )
+          }).toArray
+        }
+    }.flatten
+    new TaskSet( Random.shuffle( taskSeq ) )
+  }
+
+  override def taskResultHandler(taskRes: TaskReportMsg): Unit = {
+    if( taskRes.taskResult == TaskResultType.SUCCESS ) {
+      val task = stageTaskSet.getTask( taskRes.taskId )
+      val wid = task.getWorkerID
+      PartitionMetaStore.delPartitionMeta( wid, task.inputPartition )
+      task.outputPartition.foreach(
+        outPart => PartitionMetaStore.genAndAddPartitionMeta( wid, outPart )
+      )
+    }
+    super.taskResultHandler( taskRes )
+  }
+
+}
+

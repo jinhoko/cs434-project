@@ -1,7 +1,7 @@
 package dpsort.core.utils
 
 import scala.io.Source
-import java.io.File
+import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
 
 import org.apache.logging.log4j.scala.Logging
 
@@ -47,10 +47,31 @@ object FileUtils extends Logging {
   }
 
   def getNumLinesInFile( filePath: String ): Int = {
-    Source.fromFile(filePath).getLines.size
+    val source = Source.fromFile(filePath)
+    try {
+      source.getLines.size
+    } finally {
+      source.close()
+    }
   }
 
-}
+  def fetchLinesToArray( filePath: String, inputArr: Array[String], stIdx:Int, size:Int  ) = {
+    val source = Source.fromFile(filePath)
+    try {
+      val iter = source.getLines.drop( stIdx )
+      iter.copyToArray( inputArr, 0, size )
+    } finally {
+      source.close()
+    }
+  }
 
-// NOTE : function getFilesInDirectory from :
-//        http://alvinalexander.com/scala/how-to-list-files-in-directory-filter-names-scala/
+  def writeLineArrToFile( data: Array[String], path: String ) = {
+    val file = new File( path )
+    val writer = new PrintWriter( file )
+    for ( (line,idx) <- data.zipWithIndex ) {
+      writer.write(line)
+      writer.write("\n")
+    }
+    writer.close()
+  }
+}

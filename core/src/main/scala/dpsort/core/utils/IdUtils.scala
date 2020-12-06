@@ -18,9 +18,9 @@ object IdUtils {
     recentTaskID
   }
 
-  def genNewPartID(): Int = {
+  def genNewPartID(): String = {
     recentPartID += 1
-    recentPartID
+    "part-" + "%06d".format(recentPartID)
   }
 
 }

@@ -56,6 +56,7 @@ lazy val master = (project in file("./master"))
     mainClass in assembly := Some("dpsort.master.Main")
   )
   .dependsOn(core)
+  .dependsOn(worker)
 
 // worker project
 lazy val worker = (project in file("./worker"))

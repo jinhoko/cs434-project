@@ -8,6 +8,8 @@ import dpsort.core.network.{ChannelMap, ResponseMsg, TaskReportMsg}
 import dpsort.core.network.ResponseMsg._
 import dpsort.core.utils.SerializationUtils._
 import dpsort.core.network.TaskReportMsg.TaskResultType
+import dpsort.worker
+import dpsort.worker.execution.ExecCtxtFetcher
 import org.apache.logging.log4j.scala.Logging
 
 
@@ -60,7 +62,7 @@ class TaskExecutionContext( task: BaseTask ) extends Runnable with Logging {
   override def run(): Unit = {
     logger.debug(s"task ${task.getId} execution started.")
     Thread.sleep(1000 )
-    task.run
+    ExecCtxtFetcher.getContext(task).run(task)
     logger.info(s"task ${task.getId} execution finished. now reporting result")
     val reqChannel: MasterReqChannel = ChannelMap.getChannel(WorkerParams.MASTER_IP_PORT)
       .asInstanceOf[MasterReqChannel]
