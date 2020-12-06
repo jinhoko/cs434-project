@@ -13,7 +13,7 @@ object TaskStatus extends Enumeration {
 }
 
 object TaskType extends Enumeration { // TODO add types
-  val EMPTYTASK, TERMINATETASK, GENBLOCKTASK = Value
+  val EMPTYTASK, TERMINATETASK, GENBLOCKTASK, LOCALSORTTASK = Value
 }
 
 trait Task {
@@ -41,8 +41,8 @@ trait Task {
  * - 1000L : EmptyTask
  * - 1001L : GenBlockTask
  * - 1002L : TerminateTask
- * - 1003L : PartitionAndShuffleTask
- * - 1004L :
+ * - 1003L : LocalSortTask
+ * - 1004L : PartitionAndShuffleTask
  * - 1005L :
  */
 
@@ -97,7 +97,16 @@ final class TerminateTask( i: Int,
                    ) extends BaseTask(i, wi, TaskType.TERMINATETASK, st, null, null, null, null) with Serializable {
 }
 
-//@SerialVersionUID(1002L)
+@SerialVersionUID(1003L)
+final class LocalSortTask( i: Int,
+                           wi: Int,
+                           st: TaskStatus.Value,
+                           inputPart: String,
+                           outputPart: String,
+                   ) extends BaseTask(i, wi, TaskType.LOCALSORTTASK, st, inputPart, Array[String](outputPart), null, null) with Serializable {
+}
+
+//@SerialVersionUID(1004L)
 //final class PartitionAndShuffleTask( i: Int,
 //                                     wi: Int,
 //                                     st: TaskStatus.Value,

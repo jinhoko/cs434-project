@@ -84,9 +84,11 @@ class EmptyStage extends Stage {
 
 class TerminateStage extends Stage {
   override def toString: String = "TerminationStage"
+  // TODO need to generate task for all partitions
+
   override protected def genTaskSet(): TaskSet = {
     val taskSeq: Iterable[BaseTask] = {
-      for ( wid <- PartitionMetaStore.getWorkerIds ) // TODO need to generate task for all partitions
+      for ( wid <- PartitionMetaStore.getWorkerIds )
         yield new TerminateTask(genNewTaskID, wid, TaskStatus.WAITING, Unit, Unit)
     }
     new TaskSet( Random.shuffle( taskSeq ) ) // for fair scheduling
@@ -126,5 +128,25 @@ class GenBlockStage extends Stage {
     super.taskResultHandler( taskRes )
   }
 
+}
+
+class LocalSortStage extends Stage {
+
+  override protected def genTaskSet(): TaskSet = {
+    val taskSeq: Iterable[BaseTask] = {
+    for (wid <- PartitionMetaStore.getWorkerIds)
+      yield {
+        val parts = PartitionMetaStore.getPartitionList(wid)
+        parts.map(pMeta => {
+          new LocalSortTask(genNewTaskID, wid, TaskStatus.WAITING, pMeta.pName, genNewPartID )
+        }).toArray
+      }
+    }.flatten
+    new TaskSet( Random.shuffle( taskSeq ) )
+}
+
+  override def taskResultHandler(taskRes: TaskReportMsg): Unit = {
+
+  }
 }
 

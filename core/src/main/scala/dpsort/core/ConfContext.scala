@@ -16,7 +16,6 @@ trait Conf {
 
 // NOTE : Contents of this class partially references that of
 //        Apache Spark's SparkConf class ( handling config management )
-// TODO Write more!
 abstract class ConfContext extends Conf with Logging {
 
   private[this] val configMap = new ConcurrentHashMap[String, String]()
