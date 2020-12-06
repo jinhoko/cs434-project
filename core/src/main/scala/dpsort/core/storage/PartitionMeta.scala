@@ -12,6 +12,12 @@ final class PartitionMeta( pn:String ) extends Serializable {
    *        abs) absolute filepath
    *        rel) directory is dpsort.worker.workdir
    */
-  var pName:String = pn
-  var pLines:Int = FileUtils.getNumLinesInFile(pName)
+  val pName:String = pn
+  val pLines:Int = {
+    if( FileUtils.checkIfFileExists( pName ) ) {
+      FileUtils.getNumLinesInFile( pName )
+    } else {
+      0
+    }
+  }
 }

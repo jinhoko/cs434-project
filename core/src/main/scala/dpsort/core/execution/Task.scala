@@ -13,7 +13,7 @@ object TaskStatus extends Enumeration {
 }
 
 object TaskType extends Enumeration { // TODO add types
-  val EMPTYTASK, TERMINATETASK = Value
+  val EMPTYTASK, TERMINATETASK, GENBLOCKTASK = Value
 }
 
 trait Task {
@@ -21,8 +21,10 @@ trait Task {
   protected val wid : Int
   protected val taskType: TaskType.Value
   protected var status : TaskStatus.Value
-  protected val inputPartition : Unit // TODO define type (there can be both cases of task)
-  protected val outputPartition : Unit
+  protected val inputPartition: String
+  protected val outputPartition: Array[String]
+  protected val offsets: Array[(Int, Int)]
+  protected val partitionFunc: Unit
 
   def getId : Int = id
   def getStatus : TaskStatus.Value = status
@@ -32,8 +34,6 @@ trait Task {
 
   def isFinished: Boolean = { status == TaskStatus.SUCCESS || status == TaskStatus.FAILURE }
   def isSubmitted: Boolean = { status != TaskStatus.WAITING }
-
-  def run : Unit
 }
 
 /*
@@ -50,15 +50,20 @@ abstract class BaseTask( i: Int,
                          wi: Int,
                          tty: TaskType.Value,
                          st: TaskStatus.Value,
-                         inputPart: Unit,
-                         outputPart: Unit
+                         inputPart: String,
+                         outputPart: Array[String],
+                         off: Array[(Int, Int)],
+                         pFunc: Unit
                        ) extends Task with Serializable with Logging {
   protected val id: Int = i
   protected val taskType: TaskType.Value = tty
   protected val wid: Int = wi
   protected var status: TaskStatus.Value = st
-  protected val inputPartition: Unit = inputPart
-  protected val outputPartition: Unit = outputPart
+  val inputPartition: String = inputPart
+  val outputPartition: Array[String] = outputPart
+  val offsets: Array[(Int, Int)] = off
+  val partitionFunc: Unit = pFunc
+  // TODO add terminateStatus
 }
 
 
@@ -69,35 +74,27 @@ final class EmptyTask( i: Int,
                        st: TaskStatus.Value,
                        inputPart: Unit,
                        outputPart: Unit
-                     ) extends BaseTask(i, wi, TaskType.EMPTYTASK, st, inputPart, outputPart) with Serializable {
-
-  def run = {
-    val rndTime = new scala.util.Random(this.id).nextInt(10)
-    println(s"this is emptytask : wait for ${rndTime}(s) and finish");
-    Thread.sleep( rndTime * 1000 )
-  }
+                     ) extends BaseTask(i, wi, TaskType.EMPTYTASK, st, null, null, null, null) with Serializable {
 }
 
-//@SerialVersionUID(1001L)
-//final class GenBlockTask(  i: Int,
-//                           wi: Int,
-//                           st: TaskStatus.Value,
-//                           inputPart: Unit,
-//                           outputPart: Unit
-//                   ) extends BaseTask(i, wi, st, inputPart, outputPart) with Serializable {
-//
-//  def run() = GenBlockContext.run( this )
-//}
+@SerialVersionUID(1001L)
+final class GenBlockTask(  i: Int,
+                           wi: Int,
+                           st: TaskStatus.Value,
+                           inputPart: String,
+                           outputPart: Array[String],
+                           offsets: Array[(Int, Int)]
+                   ) extends BaseTask(i, wi, TaskType.GENBLOCKTASK, st, inputPart, outputPart, offsets, null) with Serializable {
+
+}
 
 @SerialVersionUID(1002L)
 final class TerminateTask( i: Int,
                            wi: Int,
                            st: TaskStatus.Value,
                            inputPart: Unit,
-                           outputPart: Unit
-                   ) extends BaseTask(i, wi, TaskType.TERMINATETASK, st, inputPart, outputPart) with Serializable {
-
-  def run() = TerminateContext.run( this )
+                           outputPart: Unit,
+                   ) extends BaseTask(i, wi, TaskType.TERMINATETASK, st, null, null, null, null) with Serializable {
 }
 
 //@SerialVersionUID(1002L)

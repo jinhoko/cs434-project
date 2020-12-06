@@ -57,6 +57,6 @@ object WorkerContext extends Role with Logging {
 
   private def initWorkDir(): Unit = {
     FileUtils.makeDirectory( "tmp" )
-    FileUtils.createAndClearDirectory( get("dpwort.worker.workdir") )
+    FileUtils.createAndClearDirectory( get("dpsort.worker.workdir") )
   }
 }
