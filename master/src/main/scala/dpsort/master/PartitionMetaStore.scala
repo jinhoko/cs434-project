@@ -2,37 +2,49 @@ package dpsort.master
 
 import scala.collection.mutable
 import dpsort.core.storage.PartitionMeta
+import java.util.concurrent.ConcurrentHashMap
+
+import scala.collection.mutable.ListBuffer
+import scala.concurrent.ExecutionContext
+import scala.collection.JavaConverters._
 
 object PartitionMetaStore {
 
-  private var partitionMetaStore: mutable.Map[Int, mutable.ArrayBuffer[PartitionMeta] ]
-    = mutable.Map[Int, mutable.ArrayBuffer[PartitionMeta] ]()
+  private var partitionMetaStore: ConcurrentHashMap[Int, ListBuffer[PartitionMeta]]
+  = new ConcurrentHashMap[Int, ListBuffer[PartitionMeta]] ()
+
+  def execute(body: => Unit) = ExecutionContext.global.execute( new Runnable {
+    def run() = body
+  })
 
   def addPartitionMeta( workerID:Int, pmeta: PartitionMeta ): Unit = {
     if( ! (partitionMetaStore contains workerID) ) {
-      partitionMetaStore += (workerID -> new mutable.ArrayBuffer[PartitionMeta]() )
+      partitionMetaStore.put( workerID, new ListBuffer[PartitionMeta]() )
     }
-    partitionMetaStore(workerID).append( pmeta )
+    partitionMetaStore.get( workerID ).append( pmeta )
   }
 
   def genAndAddPartitionMeta( workerID:Int, pName: String ): Unit = {
-    partitionMetaStore(workerID).append( new PartitionMeta( pName ) )
+    partitionMetaStore.get(workerID).append(new PartitionMeta(pName))
   }
 
   def delPartitionMeta( workerId:Int, pName: String ): Unit = {
-    val pMIdx = partitionMetaStore( workerId ).indexWhere( _.pName == pName )
-    partitionMetaStore( workerId ).remove( pMIdx )
+    val pMIdx = partitionMetaStore.get( workerId ).indexWhere( _.pName equals pName )
+    partitionMetaStore.get( workerId ).remove( pMIdx )
   }
 
-  def getWorkerIds( ): Iterable[Int] = { partitionMetaStore.keys }
+  def getWorkerIds( ): Iterable[Int] = { partitionMetaStore.keySet().asScala.toIterable }
 
-  def getPartitionList(workerID:Int): mutable.ArrayBuffer[PartitionMeta] = {
-    partitionMetaStore( workerID )
+  def getPartitionList(workerID:Int): mutable.ListBuffer[PartitionMeta] = {
+    partitionMetaStore.get(workerID)
   }
 
   override def toString: String = {
-    val dataStr = partitionMetaStore.keys
-      .map( k => s"Worker ${k}: ${partitionMetaStore(k).map( pm => pm.pName + ":" + pm.pLines.toString ).mkString(", ")} \n" ).foldLeft(""){ _ + _ }
+    val dataStr:String = getWorkerIds()
+      .map( k => s"Worker ${k}: ${ partitionMetaStore.get(k)
+                .map( pm => pm.pName + ":" + pm.pLines.toString )
+                .mkString(", ") } \n" )
+      .foldLeft(""){ _ + _ }
     s"[PartitionMetaStore: \n${dataStr}]"
   }
 }

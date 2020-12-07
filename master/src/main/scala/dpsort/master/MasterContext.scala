@@ -2,7 +2,7 @@ package dpsort.master
 
 import dpsort.core.execution.Role
 import dpsort.core.execution._
-import dpsort.master.execution.{EmptyStage, GenBlockStage, StageExitStatus, TerminateStage}
+import dpsort.master.execution.{EmptyStage, GenBlockStage, LocalSortStage, StageExitStatus, TerminateStage}
 import org.apache.logging.log4j.scala.Logging
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -35,12 +35,16 @@ object MasterContext extends Role with Logging {
     val workerRegistryWait = Await.result(workerRegistryWaitCondition, Duration.Inf )
     logger.info(s"all ${MasterParams.NUM_SLAVES_INT} workers registered")
 
-    println(s"${PartitionMetaStore.toString}")
-
     val stage0 = new GenBlockStage
     lastStageExitStatus = stage0.executeAndWaitForTermination()
 
     println(s"${PartitionMetaStore.toString}")
+
+    val stage1 = new LocalSortStage
+    lastStageExitStatus = stage1.executeAndWaitForTermination()
+
+    println(s"${PartitionMetaStore.toString}")
+
 
     val stageLast = new TerminateStage
     lastStageExitStatus = stageLast.executeAndWaitForTermination()
