@@ -3,6 +3,7 @@ package dpsort.worker
 import dpsort.worker.WorkerConf._
 import java.util.concurrent.{ExecutorService, Executors, ThreadPoolExecutor}
 
+import com.google.protobuf.ByteString
 import dpsort.core.execution.{BaseTask, TaskType}
 import dpsort.core.network.{ChannelMap, ResponseMsg, TaskReportMsg}
 import dpsort.core.network.ResponseMsg._
@@ -62,12 +63,18 @@ class TaskExecutionContext( task: BaseTask ) extends Runnable with Logging {
   override def run(): Unit = {
     logger.debug(s"task ${task.getId} execution started.")
     Thread.sleep(1000 )
-    ExecCtxtFetcher.getContext(task).run(task)
+
+    val taskOutput: Either[Unit, ByteString] = ExecCtxtFetcher.getContext(task).run(task)
+    val resultData = taskOutput match {
+      case Left(value) => getEmptyByteString
+      case Right(value) => value
+    }
+
     logger.info(s"task ${task.getId} execution finished. now reporting result")
     val reqChannel: MasterReqChannel = ChannelMap.getChannel(WorkerParams.MASTER_IP_PORT)
       .asInstanceOf[MasterReqChannel]
     val reportResponse: ResponseMsg = reqChannel.reportTaskResult(
-      new TaskReportMsg( taskId = task.getId, taskResult = TaskResultType.SUCCESS, serializedTaskResultData = getEmptyByteString  )
+      new TaskReportMsg( taskId = task.getId, taskResult = TaskResultType.SUCCESS, serializedTaskResultData = resultData  )
     )
     // TODO further consider possibility that report might fail
     // TODO further consider possibility that task might fail

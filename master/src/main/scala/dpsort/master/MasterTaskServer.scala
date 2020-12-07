@@ -33,11 +33,15 @@ private class MasterTaskServiceImpl extends MasterTaskServiceGrpc.MasterTaskServ
     val registry: Registry = deserializeByteStringToObject[Registry](bytestr)
     if ( isDistinctRegistry( registry ) ) {
       // Register object
+      MasterContext.registryLock.lock()
+
       registry._WORKER_ID = WorkerMetaStore.addRegistry( registry )
       registry.INPUT_FILES.foreach( addPartitionMeta(registry._WORKER_ID, _) )
       logger.info(s"Worker id: ${ WorkerMetaStore.getWorkerNum } from ${registry.IP_PORT} registered. " +
         s"${  WorkerMetaStore.getWaitingWorkersNum } remaining.")
       ChannelMap.addChannel( registry.IP_PORT, new TaskReqChannel( registry.IP_PORT ))
+      MasterContext.registryLock.unlock()
+
       Future.successful( new ResponseMsg( ResponseMsg.ResponseType.NORMAL ) )
     }
     else {

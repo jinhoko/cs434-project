@@ -6,11 +6,13 @@ import dpsort.core.network.TaskReportMsg.TaskResultType
 import dpsort.core.utils.IdUtils._
 import dpsort.core.utils.PartitionUtils._
 import dpsort.core.utils.{IdUtils, PartitionUtils}
-import dpsort.master.{PartitionMetaStore, TaskRunner}
+import dpsort.core.utils.SerializationUtils._
+import dpsort.master.{MasterContext, PartitionMetaStore, TaskRunner}
 import dpsort.master.MasterConf._
 import dpsort.master.TaskRunner._
 import org.apache.logging.log4j.scala.Logging
 
+import scala.math
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.util.Random
@@ -97,7 +99,6 @@ class TerminateStage extends Stage {
 }
 
 class GenBlockStage extends Stage {
-
   override def toString: String = "GenBlockStage"
 
   override protected def genTaskSet(): TaskSet = {
@@ -106,7 +107,7 @@ class GenBlockStage extends Stage {
         yield {
           val parts = PartitionMetaStore.getPartitionList( wid )
           parts.map( pMeta => {
-            val offsets: Array[(Int, Int)] = blockOffsetsGenerator( pMeta, get("dpsort.master.blocksizeinlines").toInt )
+            val offsets: Array[(Int, Int)] = blockOffsetsGenerator( pMeta, get("dpsort.master.blockSizeInLines").toInt )
             val outPNames: Array[String] = {1 to offsets.size}.toArray.map( _ => genNewPartID )
             assert( offsets.size == outPNames.size )
             new GenBlockTask( genNewTaskID, wid, TaskStatus.WAITING, pMeta.pName, outPNames, offsets )
@@ -161,5 +162,34 @@ class LocalSortStage extends Stage {
     super.taskResultHandler( taskRes )
   }
 
+}
+
+class SampleKeyStage extends Stage {
+  override def toString: String = "SampleKeyStage"
+
+  override protected def genTaskSet(): TaskSet = {
+    val recordsCnt = MasterContext.recordsCount
+    val sampleRatio = math.min( get("dpsort.master.maxSampleSize").toFloat / recordsCnt.toFloat
+                                ,get("dpsort.master.maxSampleRatio").toFloat )
+    logger.info(s"sample ratio is set to ${sampleRatio}")
+    val taskSeq: Iterable[BaseTask] = {
+      for (wid <- PartitionMetaStore.getWorkerIds)
+        yield {
+          val parts = PartitionMetaStore.getPartitionList(wid)
+          parts.map(pMeta => {
+            new SampleKeyTask(genNewTaskID, wid, TaskStatus.WAITING, pMeta.pName, genNewPartID, sampleRatio )
+          }).toArray
+        }
+    }.flatten
+    new TaskSet( Random.shuffle( taskSeq ) )
+  }
+
+  override def taskResultHandler(taskRes: TaskReportMsg): Unit = {
+    val sampledKeys = deserializeByteStringToObject( taskRes.serializedTaskResultData ).asInstanceOf[Array[Array[Byte]]]
+    MasterContext.registryLock.lock()
+    MasterContext.sampledKeys ++= sampledKeys
+    MasterContext.registryLock.unlock()
+    super.taskResultHandler( taskRes )
+  }
 }
 

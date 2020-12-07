@@ -13,7 +13,7 @@ object TaskStatus extends Enumeration {
 }
 
 object TaskType extends Enumeration { // TODO add types
-  val EMPTYTASK, TERMINATETASK, GENBLOCKTASK, LOCALSORTTASK = Value
+  val EMPTYTASK, TERMINATETASK, GENBLOCKTASK, LOCALSORTTASK, SAMPLEKEYTASK = Value
 }
 
 trait Task {
@@ -43,7 +43,7 @@ trait Task {
  * - 1002L : TerminateTask
  * - 1003L : LocalSortTask
  * - 1004L : PartitionAndShuffleTask
- * - 1005L :
+ * - 1005L : SampleKeyTask
  */
 
 abstract class BaseTask( i: Int,
@@ -53,7 +53,8 @@ abstract class BaseTask( i: Int,
                          inputPart: String,
                          outputPart: Array[String],
                          off: Array[(Int, Int)],
-                         pFunc: Unit
+                         pFunc: Unit,
+                         sr: Float
                        ) extends Task with Serializable with Logging {
   protected val id: Int = i
   protected val taskType: TaskType.Value = tty
@@ -63,6 +64,7 @@ abstract class BaseTask( i: Int,
   val outputPartition: Array[String] = outputPart
   val offsets: Array[(Int, Int)] = off
   val partitionFunc: Unit = pFunc
+  val sampleRatio: Float = sr
   // TODO add terminateStatus
 }
 
@@ -74,7 +76,7 @@ final class EmptyTask( i: Int,
                        st: TaskStatus.Value,
                        inputPart: Unit,
                        outputPart: Unit
-                     ) extends BaseTask(i, wi, TaskType.EMPTYTASK, st, null, null, null, null) with Serializable {
+                     ) extends BaseTask(i, wi, TaskType.EMPTYTASK, st, null, null, null, null, 0) with Serializable {
 }
 
 @SerialVersionUID(1001L)
@@ -84,7 +86,7 @@ final class GenBlockTask(  i: Int,
                            inputPart: String,
                            outputPart: Array[String],
                            offsets: Array[(Int, Int)]
-                   ) extends BaseTask(i, wi, TaskType.GENBLOCKTASK, st, inputPart, outputPart, offsets, null) with Serializable {
+                   ) extends BaseTask(i, wi, TaskType.GENBLOCKTASK, st, inputPart, outputPart, offsets, null, 0) with Serializable {
 
 }
 
@@ -94,7 +96,7 @@ final class TerminateTask( i: Int,
                            st: TaskStatus.Value,
                            inputPart: Unit,
                            outputPart: Unit,
-                   ) extends BaseTask(i, wi, TaskType.TERMINATETASK, st, null, null, null, null) with Serializable {
+                   ) extends BaseTask(i, wi, TaskType.TERMINATETASK, st, null, null, null, null, 0) with Serializable {
 }
 
 @SerialVersionUID(1003L)
@@ -103,8 +105,19 @@ final class LocalSortTask( i: Int,
                            st: TaskStatus.Value,
                            inputPart: String,
                            outputPart: String,
-                   ) extends BaseTask(i, wi, TaskType.LOCALSORTTASK, st, inputPart, Array[String](outputPart), null, null) with Serializable {
+                         ) extends BaseTask(i, wi, TaskType.LOCALSORTTASK, st, inputPart, Array[String](outputPart), null, null, 0) with Serializable {
 }
+
+@SerialVersionUID(1005L)
+final class SampleKeyTask( i: Int,
+                           wi: Int,
+                           st: TaskStatus.Value,
+                           inputPart: String,
+                           outputPart: String,
+                           sampleRatio: Float,
+                         ) extends BaseTask(i, wi, TaskType.SAMPLEKEYTASK, st, inputPart, Array[String](outputPart), null, null, sampleRatio) with Serializable {
+}
+
 
 //@SerialVersionUID(1004L)
 //final class PartitionAndShuffleTask( i: Int,
