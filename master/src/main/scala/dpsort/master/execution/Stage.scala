@@ -83,7 +83,7 @@ class EmptyStage extends Stage {
 }
 
 class TerminateStage extends Stage {
-  override def toString: String = "TerminationStage"
+  override def toString: String = "TerminateStage"
   // TODO need to generate task for all partitions
 
   override protected def genTaskSet(): TaskSet = {
@@ -122,7 +122,9 @@ class GenBlockStage extends Stage {
       val wid = task.getWorkerID
       PartitionMetaStore.delPartitionMeta( wid, task.inputPartition )
       task.outputPartition.foreach(
-        outPart => PartitionMetaStore.genAndAddPartitionMeta( wid, outPart )
+        outPart => {
+          PartitionMetaStore.genAndAddPartitionMeta( wid, outPart )
+        }
       )
     }
     super.taskResultHandler( taskRes )
@@ -131,6 +133,8 @@ class GenBlockStage extends Stage {
 }
 
 class LocalSortStage extends Stage {
+
+  override def toString: String = "LocalSortStage"
 
   override protected def genTaskSet(): TaskSet = {
     val taskSeq: Iterable[BaseTask] = {
@@ -146,7 +150,16 @@ class LocalSortStage extends Stage {
 }
 
   override def taskResultHandler(taskRes: TaskReportMsg): Unit = {
-
+    if( taskRes.taskResult == TaskResultType.SUCCESS ) {
+      val task = stageTaskSet.getTask( taskRes.taskId )
+      val wid = task.getWorkerID
+      PartitionMetaStore.delPartitionMeta( wid, task.inputPartition )
+      task.outputPartition.foreach(
+        outPart => PartitionMetaStore.genAndAddPartitionMeta( wid, outPart )
+      )
+    }
+    super.taskResultHandler( taskRes )
   }
+
 }
 

@@ -1,7 +1,7 @@
 package dpsort.core.utils
 
 import scala.io.Source
-import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
+import java.io.{BufferedInputStream, BufferedOutputStream, BufferedReader, BufferedWriter, File, FileInputStream, FileOutputStream, FileReader, FileWriter, PrintWriter}
 
 import org.apache.logging.log4j.scala.Logging
 
@@ -46,31 +46,56 @@ object FileUtils extends Logging {
   }
 
   def getNumLinesInFile( filePath: String ): Int = {
-    val source = Source.fromFile(filePath)
+    val inputReader = new BufferedReader( new FileReader( filePath ) )
     try {
-      source.getLines.size
+      val size = inputReader.lines().count().toInt
+      inputReader.close
+      size
     } finally {
-      source.close()
+      inputReader.close
     }
   }
 
-  def fetchLinesToArray( filePath: String, inputArr: Array[String], stIdx:Int, size:Int  ) = {
-    val source = Source.fromFile(filePath)
+  def fetchLinesFromFile( filePath: String, stIdx:Int, size:Int, lineSizeInBytes:Int  ) = {
+    logger.debug(s"reading ${size} lines, where each line takes ${lineSizeInBytes} bytes")
+    val inputStream = new BufferedInputStream( new FileInputStream( filePath ) )
     try {
-      val iter = source.getLines.drop( stIdx )
-      iter.copyToArray( inputArr, 0, size )
+      inputStream.skip( stIdx * lineSizeInBytes )
+      val outputArr = Array.fill[Array[Byte]](size)( Array.fill[Byte](lineSizeInBytes)(Byte.MinValue) )
+      for( lineIdx <- outputArr.indices )
+        inputStream.read( outputArr(lineIdx), 0, lineSizeInBytes )
+      outputArr
     } finally {
-      source.close()
+      inputStream.close
     }
   }
 
-  def writeLineArrToFile( data: Array[String], path: String ) = {
+  def fetchLinesFromFile( filePath: String, lineSizeInBytes:Int ):Array[Array[Byte]] = {
+    val inputReader = new BufferedReader( new FileReader( filePath ) )
+    try {
+      val size = inputReader.lines().count().toInt
+      inputReader.close
+      fetchLinesFromFile( filePath, 0, size, lineSizeInBytes )
+    } finally {
+      inputReader.close
+    }
+  }
+
+  def writeLinesToFile(data: Array[Array[Byte]], path: String ) = {
+    val outputStream = new BufferedOutputStream( new FileOutputStream( path ) )
+    for ( line: Array[Byte] <- data ) {
+      outputStream.write( line )
+    }
+    outputStream.close
+  }
+
+  def deleteFile( path:String ) = {
     val file = new File( path )
-    val writer = new PrintWriter( file )
-    for ( (line,idx) <- data.zipWithIndex ) {
-      writer.write(line)
-      writer.write("\n")
+    if( checkIfFileExists(path) ) {
+      file.delete()
+    } else{
+      logger.error("file deletion failed : file does not exists")
     }
-    writer.close()
   }
+
 }
