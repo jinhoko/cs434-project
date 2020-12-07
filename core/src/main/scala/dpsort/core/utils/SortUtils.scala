@@ -1,11 +1,12 @@
 package dpsort.core.utils
 
 import dpsort.core.execution.BaseTask
+import org.apache.logging.log4j.scala.Logging
 
+import scala.util.Random
 import scala.util.Sorting
 
-object SortUtils {
-
+object SortUtils extends Logging {
 
   private object KeyOrdering extends Ordering[Array[Byte]] {
     override def compare(x: Array[Byte], y: Array[Byte]): Int = {
@@ -35,7 +36,21 @@ object SortUtils {
      * Thus no additional memory that exceeds the partition size
      * will be required
      * */
+    logger.debug(s"in-place quicksort ${lines.size} lines")
     Sorting.quickSort(lines)( KeyOrdering )
+    logger.debug(s"sort finished")
     lines
   }
+
+  def sampleKeys( lines: Array[Array[Byte]], sRatio: Float, keyOffset: Int ): Array[Array[Byte]] = {
+    logger.debug(s"sample from ${lines} lines, with sample ratio ${sRatio}")
+    val rand = new Random( System.currentTimeMillis )
+    val sampledKeys: Array[Array[Byte]] =
+      lines.filter( _ => rand.nextFloat <= sRatio )       // Sample entries with filter
+           .map( line => line.slice(0, keyOffset-1) )
+    val actualSampleRatio = sampledKeys.size.toFloat / lines.size
+    logger.debug(s"sampled ${sampledKeys.size} keys, actual sample ratio: ${actualSampleRatio}")
+    sampledKeys
+  }
+
 }

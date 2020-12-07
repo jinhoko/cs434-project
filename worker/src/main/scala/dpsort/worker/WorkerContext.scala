@@ -20,6 +20,9 @@ object WorkerContext extends Role with Logging {
     ChannelMap.addChannel( WorkerParams.MASTER_IP_PORT , new MasterReqChannel( WorkerParams.MASTER_IP_PORT ) )
     // Set working directory
     initWorkDir
+    // Listing files to partition
+    logger.info("following files will be sorted : ")
+    WorkerParams.INPUT_FILES_STRARR.foreach( st => logger.info(s"> ${st}") )
   }
 
   override def terminate: Unit = {
@@ -36,7 +39,7 @@ object WorkerContext extends Role with Logging {
     val registryResponse: ResponseMsg = reqChannel.registerWorker( genRegistry )
     if( registryResponse.response != ResponseType.NORMAL ) {
       logger.error("registration failure")
-      return;
+      return
     }
     logger.info("registration done")
 

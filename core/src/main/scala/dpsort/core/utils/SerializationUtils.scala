@@ -34,6 +34,6 @@ object SerializationUtils extends Logging {
     deserializeByteArrayToObject( byteStr.toByteArray )
   }
 
-  def getEmptyByteString: ByteString = serializeObjectToByteString( "NULL-OBJECT" )
+  def getEmptyByteString: ByteString = serializeObjectToByteString( "NULL" )
 
 }
