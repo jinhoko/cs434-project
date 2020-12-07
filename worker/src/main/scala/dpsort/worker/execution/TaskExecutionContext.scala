@@ -10,7 +10,7 @@ import dpsort.worker.WorkerConf._
 import org.apache.logging.log4j.scala.Logging
 import dpsort.core.utils.SortUtils
 import dpsort.core.utils.SerializationUtils.serializeObjectToByteString
-import dpsort.worker.{LINE_SIZE_BYTES, KEY_OFFSET_BYTES, RecordLines}
+import dpsort.core.{LINE_SIZE_BYTES, KEY_OFFSET_BYTES, RecordLines}
 
 import scala.io.Source
 
@@ -103,7 +103,7 @@ object SampleKeyContext extends TaskExecutionContext with Logging {
       val returnObj = serializeObjectToByteString( sampledKeys )
       Right( returnObj )
     } catch {
-      case e:Throwable => {
+      case e: Throwable => {
         logger.error("failed to sample partition")
         throw e
       }
@@ -112,12 +112,21 @@ object SampleKeyContext extends TaskExecutionContext with Logging {
 
 }
 
-//object PartitionAndShuffleContext {
-//  def run( task: PartitionAndShuffleTask ) = {
-//
-//  }
-//}
-//
+object PartitionAndShuffleContext {
+  def run( task: PartitionAndShuffleTask ) = {
+
+    // read partition and split into n partitions (list(arraybufer))
+
+    // find mine and write to file first
+
+    // shuffle out
+
+    // TODO 8
+  }
+}
+
+
+
 
 object TerminateContext extends TaskExecutionContext  {
   def run( _task: BaseTask ) = {

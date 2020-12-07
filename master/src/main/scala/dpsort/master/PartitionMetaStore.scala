@@ -13,6 +13,9 @@ import scala.concurrent.duration.Duration
 
 object PartitionMetaStore {
 
+  /*
+   * PartitionMetaStore requires strict concurrency control
+   */
   private val partitionMetaStore
     = mutable.Map[Int, ListBuffer[PartitionMeta]] ()
 

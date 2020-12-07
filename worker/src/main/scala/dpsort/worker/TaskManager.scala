@@ -77,6 +77,7 @@ class TaskExecutionContext( task: BaseTask ) extends Runnable with Logging {
       new TaskReportMsg( taskId = task.getId, taskResult = TaskResultType.SUCCESS, serializedTaskResultData = resultData  )
     )
     // TODO further consider possibility that report might fail
+      // execute 말고 submit으로 해서 onfailure 처리해야됨. 지금은 fail하면 그냥 보고를 안함.
     // TODO further consider possibility that task might fail
 
     TaskManager.numRunningThreads -= 1

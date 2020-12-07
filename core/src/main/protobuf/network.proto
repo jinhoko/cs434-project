@@ -18,12 +18,10 @@ service HeartBeatService {
   rpc HeartBeatReport (HeartBeatMsg) returns (ResponseMsg) {}
 }
 
-// TODO phase 3
-//service ShuffleService {
-//  // not sure
-//  rpc RequestShuffle (ShuffleRequestMsg) returns (ResponseMsg) {}
-//  rpc SendShuffleData (ShuffleDataMsg) returns (ResponseMsg) {}
-//}
+service ShuffleService {
+  rpc RequestShuffle (ShuffleRequestMsg) returns (ResponseMsg) {}
+  rpc SendShuffleData (ShuffleDataMsg) returns (ResponseMsg) {}
+}
 
 
 /*
@@ -69,14 +67,11 @@ message HeartBeatMsg {
   HeartBeatType heartBeat = 1;
 }
 
-// TODO phase 3
-//message ShuffleRequestMsg {
-//
-//}
-//
-//message ShuffleDataMsg {
-//  // ShuffleDataType
-//  sint32 a = 1;
-//  sint32 b = 2;
-//}
-// use serialized object? or use repeaded protobuf definition? (repeated => Seq)
+message ShuffleRequestMsg {
+  // Empty
+}
+
+message ShuffleDataMsg {
+  bytes serializedPartitionName = 1;
+  bytes serializedShuffleData = 2;
+}
