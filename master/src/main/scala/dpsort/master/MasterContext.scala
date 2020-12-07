@@ -2,8 +2,10 @@ package dpsort.master
 
 import java.util.concurrent.locks.Lock
 
+import dpsort.core.MAX_KEY
 import dpsort.core.execution.Role
 import dpsort.core.execution._
+import dpsort.core.utils.SortUtils
 import dpsort.master.execution.{EmptyStage, GenBlockStage, LocalSortStage, SampleKeyStage, StageExitStatus, TerminateStage}
 import org.apache.logging.log4j.scala.Logging
 
@@ -60,25 +62,41 @@ object MasterContext extends Role with Logging {
     val stage2 = new SampleKeyStage
     lastStageExitStatus = stage2.executeAndWaitForTermination()
 
-    // aggregate samples TODO
-    // generate function TODO
+    genPartitionFunction
 
     val stageLast = new TerminateStage
     lastStageExitStatus = stageLast.executeAndWaitForTermination()
 
-    // Execute GenBlockStage
-//    val stage1 = new GenBlockStage
-//    lastStageExitStatus = stage1.executeAndWaitForTermination()
-
-    // Execute LocalSortStage
-
-    // Execute SampleKeysStage
 
     // Execute PartitionAndShuffleStage
 
     // Execute MergeStage (iterate)
 
     // Execute TerminateStage
+
+  }
+
+  private def genPartitionFunction(): Unit = {
+    /*
+     * Here our partitioning policy
+     * equally assigns records all workers,
+     * without considering the size of each worker's input files
+     */
+    val wNum = WorkerMetaStore.getWorkerNum
+    assert( sampledKeys.size >= wNum )
+
+    val keysArr = sampledKeys.toArray
+    SortUtils.sortLines( keysArr )
+
+    def slidingSize = ( keysArr.size.toFloat / wNum.toFloat ).toInt
+
+    val pivots = (0 to wNum-1).map( idx => {    // Key less or equal than pivot will be assigned to that slot
+      if ( idx == wNum-1 ) { MAX_KEY }
+      else { keysArr( idx * slidingSize ) } }
+    )
+
+    // TODO zip with location
+
 
   }
 

@@ -17,7 +17,8 @@ object WorkerMetaStore {
   }
 
   def isDistinctRegistry( registry: Registry ) = {
-    ! workerMetaStore.valuesIterator.exists( _.IP_PORT == registry.IP_PORT )
+    (! workerMetaStore.valuesIterator.exists( _.IP_PORT == registry.IP_PORT )) &&
+    (! workerMetaStore.valuesIterator.exists( _.SHUFFLE_PORT == registry.SHUFFLE_PORT ))
   }
   def getWorkerNum: Int = workerMetaStore.size
   def getWaitingWorkersNum: Int = MasterParams.NUM_SLAVES_INT - WorkerMetaStore.getWorkerNum

@@ -19,11 +19,12 @@ object SortUtils extends Logging {
       (x, y) match {
         case (xh :: xt, yh :: yt) => {
           if( xh > yh ) 1
-          else if ( xh < yh) -1
+          else if ( xh < yh ) -1
           else _compare(xt, yt)
         }
         case (xh :: Nil, yh :: Nil) => {
-          if (xh > yh) 1
+          if ( xh > yh ) 1
+          else if ( xh < yh ) -1
           else 0
         }
       }
@@ -44,13 +45,19 @@ object SortUtils extends Logging {
 
   def sampleKeys( lines: Array[Array[Byte]], sRatio: Float, keyOffset: Int ): Array[Array[Byte]] = {
     logger.debug(s"sample from ${lines} lines, with sample ratio ${sRatio}")
+    def getKeyFromLine( line: Array[Byte] ): Array[Byte] = line.slice(0, keyOffset)
+
     val rand = new Random( System.currentTimeMillis )
     val sampledKeys: Array[Array[Byte]] =
       lines.filter( _ => rand.nextFloat <= sRatio )       // Sample entries with filter
-           .map( line => line.slice(0, keyOffset-1) )
-    val actualSampleRatio = sampledKeys.size.toFloat / lines.size
-    logger.debug(s"sampled ${sampledKeys.size} keys, actual sample ratio: ${actualSampleRatio}")
-    sampledKeys
+           .map( li => getKeyFromLine(li) )
+    val outputKeys = sampledKeys.size match {             // should at least include 1 sample
+      case 0 => Array[Array[Byte]]( getKeyFromLine(lines(0)) )
+      case _ => sampledKeys
+    }
+    val actualSampleRatio = outputKeys.size.toFloat / lines.size
+    logger.debug(s"sampled ${outputKeys.size} keys, actual sample ratio: ${actualSampleRatio}")
+    outputKeys
   }
 
 }

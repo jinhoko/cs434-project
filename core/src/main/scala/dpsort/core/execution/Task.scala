@@ -13,7 +13,7 @@ object TaskStatus extends Enumeration {
 }
 
 object TaskType extends Enumeration { // TODO add types
-  val EMPTYTASK, TERMINATETASK, GENBLOCKTASK, LOCALSORTTASK, SAMPLEKEYTASK = Value
+  val EMPTYTASK, TERMINATETASK, GENBLOCKTASK, LOCALSORTTASK, SAMPLEKEYTASK, PARTITIONANDSHUFFLETASK = Value
 }
 
 trait Task {
@@ -118,22 +118,12 @@ final class SampleKeyTask( i: Int,
                          ) extends BaseTask(i, wi, TaskType.SAMPLEKEYTASK, st, inputPart, Array[String](outputPart), null, null, sampleRatio) with Serializable {
 }
 
-
-//@SerialVersionUID(1004L)
-//final class PartitionAndShuffleTask( i: Int,
-//                                     wi: Int,
-//                                     st: TaskStatus.Value,
-//                                     inputPart: Unit,
-//                                     outputPart: Unit,
-//                                     partitionFunc: Unit  // todo type?
-//                         ) extends BaseTask(i, wi, st, inputPart, outputPart) with Serializable {
-//
-//  val partitioningFunction = partitionFunc
-//
-//  def run() = PartitionAndShuffleContext.run( this )
-//}
-
-
-// TODO other tasks as well
-// serialization : https://alvinalexander.com/scala/how-to-use-serialization-in-scala-serializable-trait/
-//
+@SerialVersionUID(1004L)
+final class PartitionAndShuffleTask( i: Int,
+                                     wi: Int,
+                                     st: TaskStatus.Value,
+                                     inputPart: Unit,
+                                     outputPart: Unit,
+                                     partitionFunc: Unit  // todo revise
+                         ) extends BaseTask(i, wi, TaskType.PARTITIONANDSHUFFLETASK, st, inputPart, outputPart, null, null, 0) with Serializable {
+}

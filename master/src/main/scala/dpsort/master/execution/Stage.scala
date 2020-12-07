@@ -185,7 +185,8 @@ class SampleKeyStage extends Stage {
   }
 
   override def taskResultHandler(taskRes: TaskReportMsg): Unit = {
-    val sampledKeys = deserializeByteStringToObject( taskRes.serializedTaskResultData ).asInstanceOf[Array[Array[Byte]]]
+    val sampledKeys = deserializeByteStringToObject( taskRes.serializedTaskResultData )
+      .asInstanceOf[Array[Array[Byte]]]
     MasterContext.registryLock.lock()
     MasterContext.sampledKeys ++= sampledKeys
     MasterContext.registryLock.unlock()
@@ -193,3 +194,16 @@ class SampleKeyStage extends Stage {
   }
 }
 
+class PartitionAndShuffleStage extends Stage {
+  override def toString: String = "PartitionAndShuffleStage"
+
+  override protected def genTaskSet(): TaskSet = {
+    // TODO 6
+  }
+
+  override def taskResultHandler(taskRes: TaskReportMsg): Unit = {
+    // TODO 7
+    super.taskResultHandler( taskRes )
+  }
+
+}

@@ -16,6 +16,7 @@ object WorkerContext extends Role with Logging {
   override def initialize: Unit = {
     // Start networking services
     WorkerTaskServer.startServer
+    WorkerShuffleServer.startServer
     // Open worker channels
     ChannelMap.addChannel( WorkerParams.MASTER_IP_PORT , new MasterReqChannel( WorkerParams.MASTER_IP_PORT ) )
     // Set working directory
@@ -53,6 +54,7 @@ object WorkerContext extends Role with Logging {
     val registryObj = new Registry(
       WorkerConf.get("dpsort.worker.ip"),
       WorkerConf.get("dpsort.worker.port").toInt,
+      WorkerConf.get("dpsort.worker.shufflePort").toInt,
       WorkerParams.INPUT_FILES_STRARR.map( new PartitionMeta( _ ) )
     )
     new RegistryMsg( serializeObjectToByteString( registryObj ) )

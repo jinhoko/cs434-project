@@ -40,5 +40,3 @@
         </logger>
     </Loggers>
 </Configuration>
-
-<!-- TODO to control log level to for netty -->
