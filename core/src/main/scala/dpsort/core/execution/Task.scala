@@ -14,7 +14,7 @@ object TaskStatus extends Enumeration {
 }
 
 object TaskType extends Enumeration { // TODO add types
-  val EMPTYTASK, TERMINATETASK, GENBLOCKTASK, LOCALSORTTASK, SAMPLEKEYTASK, PARTITIONANDSHUFFLETASK = Value
+  val EMPTYTASK, TERMINATETASK, GENBLOCKTASK, LOCALSORTTASK, SAMPLEKEYTASK, PARTITIONANDSHUFFLETASK, MERGETASK = Value
 }
 
 trait Task {
@@ -22,7 +22,7 @@ trait Task {
   protected val wid : Int
   protected val taskType: TaskType.Value
   protected var status : TaskStatus.Value
-  protected val inputPartition: String
+  protected val inputPartition: Array[String]
   protected val outputPartition: Array[String]
   protected val offsets: Array[(Int, Int)]
   protected val partitionFunc: PartFunc
@@ -45,13 +45,14 @@ trait Task {
  * - 1003L : LocalSortTask
  * - 1004L : PartitionAndShuffleTask
  * - 1005L : SampleKeyTask
+ * - 1006L : MergeTask
  */
 
 abstract class BaseTask( i: Int,
                          wi: Int,
                          tty: TaskType.Value,
                          st: TaskStatus.Value,
-                         inputPart: String,
+                         inputPart: Array[String],
                          outputPart: Array[String],
                          off: Array[(Int, Int)],
                          pFunc: PartFunc,
@@ -61,7 +62,7 @@ abstract class BaseTask( i: Int,
   protected val taskType: TaskType.Value = tty
   protected val wid: Int = wi
   protected var status: TaskStatus.Value = st
-  val inputPartition: String = inputPart
+  val inputPartition: Array[String] = inputPart
   val outputPartition: Array[String] = outputPart
   val offsets: Array[(Int, Int)] = off
   val partitionFunc: PartFunc = pFunc
@@ -87,7 +88,7 @@ final class GenBlockTask(  i: Int,
                            inputPart: String,
                            outputPart: Array[String],
                            offsets: Array[(Int, Int)]
-                   ) extends BaseTask(i, wi, TaskType.GENBLOCKTASK, st, inputPart, outputPart, offsets, null, 0) with Serializable {
+                   ) extends BaseTask(i, wi, TaskType.GENBLOCKTASK, st, Array[String](inputPart), outputPart, offsets, null, 0) with Serializable {
 
 }
 
@@ -106,7 +107,7 @@ final class LocalSortTask( i: Int,
                            st: TaskStatus.Value,
                            inputPart: String,
                            outputPart: String,
-                         ) extends BaseTask(i, wi, TaskType.LOCALSORTTASK, st, inputPart, Array[String](outputPart), null, null, 0) with Serializable {
+                         ) extends BaseTask(i, wi, TaskType.LOCALSORTTASK, st, Array[String](inputPart), Array[String](outputPart), null, null, 0) with Serializable {
 }
 
 @SerialVersionUID(1005L)
@@ -116,7 +117,7 @@ final class SampleKeyTask( i: Int,
                            inputPart: String,
                            outputPart: String,
                            sampleRatio: Float,
-                         ) extends BaseTask(i, wi, TaskType.SAMPLEKEYTASK, st, inputPart, Array[String](outputPart), null, null, sampleRatio) with Serializable {
+                         ) extends BaseTask(i, wi, TaskType.SAMPLEKEYTASK, st, Array[String](inputPart), Array[String](outputPart), null, null, sampleRatio) with Serializable {
 }
 
 @SerialVersionUID(1004L)
@@ -126,5 +127,14 @@ final class PartitionAndShuffleTask( i: Int,
                                      inputPart: String,
                                      outputPart: Array[String],
                                      partitionFunc: PartFunc
-                         ) extends BaseTask(i, wi, TaskType.PARTITIONANDSHUFFLETASK, st, inputPart, outputPart, null, partitionFunc, 0) with Serializable {
+                         ) extends BaseTask(i, wi, TaskType.PARTITIONANDSHUFFLETASK, st, Array[String](inputPart), outputPart, null, partitionFunc, 0) with Serializable {
+}
+
+@SerialVersionUID(1006L)
+final class MergeTask( i: Int,
+                       wi: Int,
+                       st: TaskStatus.Value,
+                       inputPart: Array[String],
+                       outputPart: Array[String],
+                     ) extends BaseTask(i, wi, TaskType.MERGETASK, st, inputPart, outputPart, null, null, 0) with Serializable {
 }
