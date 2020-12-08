@@ -62,13 +62,11 @@ object MasterContext extends Role with Logging {
 
     val stage2 = new SampleKeyStage
     lastStageExitStatus = stage2.executeAndWaitForTermination()
-
     genPartitionFunction
 
     val stage3 = new PartitionAndShuffleStage
     lastStageExitStatus = stage3.executeAndWaitForTermination()
     println(s"${PartitionMetaStore.toString}")
-
 
     val stageLast = new TerminateStage
     lastStageExitStatus = stageLast.executeAndWaitForTermination()
@@ -96,16 +94,16 @@ object MasterContext extends Role with Logging {
 
     def slidingSize = ( keysArr.size.toFloat / wNum.toFloat ).toInt
 
-    val pivots = (0 to wNum-1).map( idx => {    // Key less or equal than pivot will be assigned to that slot
-      if ( idx == wNum-1 ) { MAX_KEY }
+    val pivots = (1 to wNum).map( idx => {    // Key less or equal than pivot will be assigned to that slot
+      if ( idx == wNum ) { MAX_KEY }
       else { keysArr( idx * slidingSize ) } }
     )
 
     val shuffleInfo = PartitionMetaStore.getWorkerIds
       .map( id => WorkerMetaStore.getWorkerShuffleIPPort(id) )
 
-    logger.debug("printing partition pivots : ")
-    pivots.foreach( a => logger.debug(s"> pivot : ${a.map(_.toByte).mkString}") )
+    logger.info("printing partition pivots : ")
+    pivots.foreach( a => logger.info(s"> pivot : ${a.map(_.toChar).mkString}") )
 
     assert( pivots.size == shuffleInfo.size )
     val pFunc = pivots.zip( shuffleInfo ).toArray

@@ -17,7 +17,7 @@ object PartitionMetaStore {
    * PartitionMetaStore requires strict concurrency control
    */
   private val partitionMetaStore
-    = mutable.Map[Int, ListBuffer[PartitionMeta]] ()
+    = mutable.SortedMap[Int, ListBuffer[PartitionMeta]] ()
 
   val pmsLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
   def readlock = pmsLock.readLock()

@@ -213,10 +213,14 @@ class PartitionAndShuffleStage extends Stage {
   }
 
   override def taskResultHandler(taskRes: TaskReportMsg): Unit = {
-
-    println(s">> task ${taskRes.taskId} done.")
-    // TOdO write
-
+    if( taskRes.taskResult == TaskResultType.SUCCESS ) {
+      val task = stageTaskSet.getTask( taskRes.taskId )
+      val wid = task.getWorkerID
+      PartitionMetaStore.delPartitionMeta( wid, task.inputPartition )
+      task.outputPartition.zipWithIndex.foreach(
+        outpartIdx => PartitionMetaStore.genAndAddPartitionMeta( outpartIdx._2 + 1, outpartIdx._1 )
+      )
+    }
     super.taskResultHandler( taskRes )
   }
 
