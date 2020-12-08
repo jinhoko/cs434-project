@@ -1,5 +1,7 @@
 package dpsort.worker
 
+import java.util.concurrent.TimeUnit
+
 import dpsort.core.network._
 import dpsort.worker.WorkerParams
 import dpsort.core.network.{Channel, MasterTaskServiceGrpc, RegistryMsg, ResponseMsg, ShuffleDataMsg, ShuffleRequestMsg, TaskReportMsg}
@@ -41,6 +43,9 @@ class MasterReqChannel( ipPort: (String, Int) ) extends Channel with Logging {
         new ResponseMsg( ResponseMsg.ResponseType.REQUEST_ERROR )
     }
   }
+  def shutdown(): Unit = {
+    masterTaskChannel.shutdown.awaitTermination(5, TimeUnit.SECONDS)
+  }
 }
 
 class ShuffleReqChannel( ipPort: (String, Int) ) extends Channel with Logging {
@@ -55,6 +60,7 @@ class ShuffleReqChannel( ipPort: (String, Int) ) extends Channel with Logging {
   /* Blocking request */
   def requestShuffle( request: ShuffleRequestMsg ): ResponseMsg = {
     try {
+      logger.debug("requesting shuffle")
       val response = shuffleBlockingStub.requestShuffle(request)
       response
     } catch {
@@ -67,6 +73,7 @@ class ShuffleReqChannel( ipPort: (String, Int) ) extends Channel with Logging {
   /* Non-Blocking request */
   def sendShuffleData( request: ShuffleDataMsg ): Future[ResponseMsg] = {
     try {
+      logger.debug("sending shuffle data")
       val response: Future[ResponseMsg] = shuffleNonBlockingStub.sendShuffleData(request)
       response
     } catch {
@@ -75,4 +82,9 @@ class ShuffleReqChannel( ipPort: (String, Int) ) extends Channel with Logging {
         throw e
     }
   }
+
+  def shutdown(): Unit = {
+    shuffleChannel.shutdown.awaitTermination(5, TimeUnit.SECONDS)
+  }
+
 }

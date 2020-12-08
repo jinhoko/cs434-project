@@ -1,10 +1,14 @@
 package dpsort.core.utils
 
+import java.io.{BufferedInputStream, FileInputStream}
+
+import dpsort.core.{MutableRecordLines, PartFunc}
 import dpsort.core.execution.BaseTask
 import org.apache.logging.log4j.scala.Logging
 
 import scala.util.Random
 import scala.util.Sorting
+import dpsort.core.KEY_OFFSET_BYTES
 
 object SortUtils extends Logging {
 
@@ -12,21 +16,18 @@ object SortUtils extends Logging {
     override def compare(x: Array[Byte], y: Array[Byte]): Int = {
       // In order to sort by ascending order,
       // it returns positive when x > y
-      _compare( x.toList, y. toList )
+      assert( x.size == y.size )
+      _compare( x.toList, y.toList )
     }
 
     def _compare(x: List[Byte], y: List[Byte] ): Int = {
       (x, y) match {
         case (xh :: xt, yh :: yt) => {
-          if( xh > yh ) 1
-          else if ( xh < yh ) -1
-          else _compare(xt, yt)
+          if( xh > yh ) {1}
+          else if ( xh < yh ) {-1}
+          else { _compare(xt, yt) }
         }
-        case (xh :: Nil, yh :: Nil) => {
-          if ( xh > yh ) 1
-          else if ( xh < yh ) -1
-          else 0
-        }
+        case (List(), List()) => { 0 }
       }
     }
 
@@ -58,6 +59,25 @@ object SortUtils extends Logging {
     val actualSampleRatio = outputKeys.size.toFloat / lines.size
     logger.debug(s"sampled ${outputKeys.size} keys, actual sample ratio: ${actualSampleRatio}")
     outputKeys
+  }
+
+  def splitPartitions( inputFile:String, partFunc: PartFunc, partitions: Array[MutableRecordLines],
+                       nLines:Int, lineSizeInBytes:Int ) = {
+
+    val inputStream = new BufferedInputStream( new FileInputStream( inputFile ) )
+    try {
+      for( lineIdx <- 0 until nLines ) {
+        val line = Array.fill[Byte]( lineSizeInBytes )( 0 )
+        inputStream.read( line, 0, lineSizeInBytes )
+        val keyIdx = partFunc.zipWithIndex
+                  .filter( kv => { assert( kv._1._1.size == line.slice(0, KEY_OFFSET_BYTES).size && line.slice(0, KEY_OFFSET_BYTES).size == KEY_OFFSET_BYTES  ) ; KeyOrdering.compare( kv._1._1, line.slice(0, KEY_OFFSET_BYTES) ) >= 0 }) // at least one key is filtered
+                  .head._2
+        partitions(keyIdx).append(line)
+      }
+    } finally {
+      inputStream.close
+    }
+
   }
 
 }

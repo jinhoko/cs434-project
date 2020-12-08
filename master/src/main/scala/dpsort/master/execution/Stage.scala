@@ -198,11 +198,25 @@ class PartitionAndShuffleStage extends Stage {
   override def toString: String = "PartitionAndShuffleStage"
 
   override protected def genTaskSet(): TaskSet = {
-    // TODO 6
+    val pFunc = MasterContext.partitionFunction
+    val taskSeq: Iterable[BaseTask] = {
+      for ( wid <- PartitionMetaStore.getWorkerIds )
+        yield {
+          val parts = PartitionMetaStore.getPartitionList( wid )
+          parts.map( pMeta => {
+            val outPNames: Array[String] = {1 to PartitionMetaStore.getWorkerIds.size}.toArray.map( _ => genNewPartID() )
+            new PartitionAndShuffleTask( genNewTaskID, wid, TaskStatus.WAITING, pMeta.pName, outPNames, pFunc )
+          }).toArray
+        }
+    }.flatten
+    new TaskSet( Random.shuffle( taskSeq ) )
   }
 
   override def taskResultHandler(taskRes: TaskReportMsg): Unit = {
-    // TODO 7
+
+    println(s">> task ${taskRes.taskId} done.")
+    // TOdO write
+
     super.taskResultHandler( taskRes )
   }
 

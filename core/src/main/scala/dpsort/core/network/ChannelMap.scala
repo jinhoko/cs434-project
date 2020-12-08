@@ -20,4 +20,18 @@ object ChannelMap extends Logging {
     chnl
   }
 
+  def getOrAddChannel(key: (String, Int), newChannel: Channel ): Channel = {
+    try {
+      val origChnl = channelMap(key)
+      // if exists, it will not throw exception
+      newChannel.shutdown()
+      origChnl
+    } catch {
+      case e: Throwable => {
+        addChannel( key, newChannel )
+        getChannel( key )
+      }
+    }
+  }
+
 }
