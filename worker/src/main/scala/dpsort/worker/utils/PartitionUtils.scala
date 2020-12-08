@@ -1,4 +1,4 @@
-package dpsort.worker.wUtils
+package dpsort.worker.utils
 
 import dpsort.core.utils.FileUtils._
 import dpsort.worker.WorkerConf._

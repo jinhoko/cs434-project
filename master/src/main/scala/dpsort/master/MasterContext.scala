@@ -6,7 +6,7 @@ import dpsort.core.{MAX_KEY, MutablePartFunc, PartFunc}
 import dpsort.core.execution.Role
 import dpsort.core.execution._
 import dpsort.core.utils.SortUtils
-import dpsort.master.execution.{EmptyStage, GenBlockStage, LocalSortStage, PartitionAndShuffleStage, SampleKeyStage, StageExitStatus, TerminateStage}
+import dpsort.master.execution.{EmptyStage, GenBlockStage, LocalSortStage, MergeStage, PartitionAndShuffleStage, SampleKeyStage, StageExitStatus, TerminateStage}
 import org.apache.logging.log4j.scala.Logging
 
 import scala.collection.mutable
@@ -19,7 +19,7 @@ object MasterContext extends Role with Logging {
 
   val registryLock = new java.util.concurrent.locks.ReentrantLock
 
-  var lastStageExitStatus = StageExitStatus.SUCCESS
+  var lastStageExitStatus: StageExitStatus.Value = StageExitStatus.SUCCESS
   var recordsCount: Int = 0
   var sampledKeys: mutable.ArrayBuffer[Array[Byte]] = mutable.ArrayBuffer[Array[Byte]]()
   var partitionFunction: PartFunc = Array[(Array[Byte], (String, Int))]()
@@ -68,15 +68,13 @@ object MasterContext extends Role with Logging {
     lastStageExitStatus = stage3.executeAndWaitForTermination()
     println(s"${PartitionMetaStore.toString}")
 
+    while( ! isMergeFinished ) {
+      val stage4 = new MergeStage
+      lastStageExitStatus = stage4.executeAndWaitForTermination()
+    }
+
     val stageLast = new TerminateStage
     lastStageExitStatus = stageLast.executeAndWaitForTermination()
-
-
-    // Execute PartitionAndShuffleStage
-
-    // Execute MergeStage (iterate)
-
-    // Execute TerminateStage
 
   }
 
@@ -93,23 +91,23 @@ object MasterContext extends Role with Logging {
     SortUtils.sortLines( keysArr )
 
     def slidingSize = ( keysArr.size.toFloat / wNum.toFloat ).toInt
-
     val pivots = (1 to wNum).map( idx => {    // Key less or equal than pivot will be assigned to that slot
       if ( idx == wNum ) { MAX_KEY }
       else { keysArr( idx * slidingSize ) } }
     )
-
     val shuffleInfo = PartitionMetaStore.getWorkerIds
       .map( id => WorkerMetaStore.getWorkerShuffleIPPort(id) )
 
     logger.info("printing partition pivots : ")
     pivots.foreach( a => logger.info(s"> pivot : ${a.map(_.toChar).mkString}") )
-
     assert( pivots.size == shuffleInfo.size )
     val pFunc = pivots.zip( shuffleInfo ).toArray
-
     MasterContext.partitionFunction = pFunc
   }
 
-
+  private def isMergeFinished: Boolean = {
+    PartitionMetaStore.getWorkerIds.map(
+      wid => PartitionMetaStore.getPartitionList(wid).size <= 1
+    ).reduce( (b1, b2) => b1 && b2 )
+  }
 }

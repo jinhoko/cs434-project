@@ -80,4 +80,13 @@ object SortUtils extends Logging {
 
   }
 
+  def mergePartitions() = {
+
+    // get and open 3 files in1 in2 out2
+    // read and write directly.
+
+
+  }
+
+
 }

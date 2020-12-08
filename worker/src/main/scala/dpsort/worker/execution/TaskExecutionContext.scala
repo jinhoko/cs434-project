@@ -5,7 +5,7 @@ import com.sun.org.apache.xml.internal.utils.ThreadControllerWrapper
 import dpsort.core.execution._
 import dpsort.core.execution.TaskType
 import dpsort.core.utils.FileUtils._
-import dpsort.worker.wUtils.PartitionUtils._
+import dpsort.worker.utils.PartitionUtils._
 import dpsort.worker.WorkerConf._
 import org.apache.logging.log4j.scala.Logging
 import dpsort.core.utils.SortUtils
@@ -26,6 +26,7 @@ object ExecCtxtFetcher {
       case TaskType.LOCALSORTTASK => LocalSortContext
       case TaskType.SAMPLEKEYTASK => SampleKeyContext
       case TaskType.PARTITIONANDSHUFFLETASK => PartitionAndShuffleContext
+      case TaskType.MERGETASK => MergeContext
       // TODO write more
     }
   }
@@ -54,7 +55,7 @@ object GenBlockContext extends TaskExecutionContext with Logging {
   def run( _task: BaseTask ) = {
     val task = _task.asInstanceOf[GenBlockTask]
     try {
-      val filepath = task.inputPartition
+      val filepath = task.inputPartition.head
       for( (outPartName,pIdx) <- task.outputPartition.zipWithIndex ){
         val stIdx = task.offsets(pIdx)._1 - 1
         val copyLen = task.offsets(pIdx)._2 - task.offsets(pIdx)._1 + 1
@@ -78,7 +79,7 @@ object LocalSortContext extends TaskExecutionContext with Logging {
   def run(_task: BaseTask) = {
     val task = _task.asInstanceOf[LocalSortTask]
     try {
-      val filepath = getPartitionPath( task.inputPartition )
+      val filepath = getPartitionPath( task.inputPartition.head )
       val outPartName = task.outputPartition.head
       val partLines: RecordLines = fetchLinesFromFile( filepath, LINE_SIZE_BYTES )
       SortUtils.sortLines(partLines)
@@ -100,7 +101,7 @@ object SampleKeyContext extends TaskExecutionContext with Logging {
   override def run(_task: BaseTask) = {
     val task = _task.asInstanceOf[SampleKeyTask]
     try {
-      val filepath = getPartitionPath( task.inputPartition )
+      val filepath = getPartitionPath( task.inputPartition.head )
       val partLines: RecordLines = fetchLinesFromFile( filepath, LINE_SIZE_BYTES )
       val sampledKeys = SortUtils.sampleKeys( partLines, task.sampleRatio, KEY_OFFSET_BYTES )
       val returnObj = serializeObjectToByteString( sampledKeys )
@@ -120,7 +121,7 @@ object PartitionAndShuffleContext extends TaskExecutionContext with Logging {
   def run( _task: BaseTask ) = {
     val task = _task.asInstanceOf[PartitionAndShuffleTask]
 
-    val filepath = getPartitionPath( task.inputPartition )
+    val filepath = getPartitionPath( task.inputPartition.head )
     val partFunc: PartFunc = task.partitionFunc
     val partitions = Array.fill[MutableRecordLines]( partFunc.size )( new ArrayBuffer[Array[Byte]]() )
 
@@ -144,6 +145,19 @@ object PartitionAndShuffleContext extends TaskExecutionContext with Logging {
 
 }
 
+object MergeContext extends TaskExecutionContext {
+  def run( _task: BaseTask) = {
+    val task = _task.asInstanceOf[MergeTask]
+    // TODO
+
+    // call mergepartitions
+
+    // delete input
+
+    Left( Unit )
+  }
+}
+
 
 object TerminateContext extends TaskExecutionContext  {
   def run( _task: BaseTask ) = {
@@ -154,6 +168,3 @@ object TerminateContext extends TaskExecutionContext  {
     Left( Unit )
   }
 }
-
-
-// TODO

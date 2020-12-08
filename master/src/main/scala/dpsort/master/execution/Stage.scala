@@ -86,10 +86,11 @@ class EmptyStage extends Stage {
 
 class TerminateStage extends Stage {
   override def toString: String = "TerminateStage"
-  // TODO need to generate task for all partitions
 
   override protected def genTaskSet(): TaskSet = {
     val taskSeq: Iterable[BaseTask] = {
+      // TODO if failure, mark failure so that no need to write.
+      // only 1 termination for each worker is possible.
       for ( wid <- PartitionMetaStore.getWorkerIds )
         yield new TerminateTask(genNewTaskID, wid, TaskStatus.WAITING, Unit, Unit)
     }
@@ -121,7 +122,7 @@ class GenBlockStage extends Stage {
     if( taskRes.taskResult == TaskResultType.SUCCESS ) {
       val task = stageTaskSet.getTask( taskRes.taskId )
       val wid = task.getWorkerID
-      PartitionMetaStore.delPartitionMeta( wid, task.inputPartition )
+      PartitionMetaStore.delPartitionMeta( wid, task.inputPartition.head )
       task.outputPartition.foreach(
         outPart => {
           PartitionMetaStore.genAndAddPartitionMeta( wid, outPart )
@@ -154,7 +155,7 @@ class LocalSortStage extends Stage {
     if( taskRes.taskResult == TaskResultType.SUCCESS ) {
       val task = stageTaskSet.getTask( taskRes.taskId )
       val wid = task.getWorkerID
-      PartitionMetaStore.delPartitionMeta( wid, task.inputPartition )
+      PartitionMetaStore.delPartitionMeta( wid, task.inputPartition.head )
       task.outputPartition.foreach(
         outPart => PartitionMetaStore.genAndAddPartitionMeta( wid, outPart )
       )
@@ -216,7 +217,7 @@ class PartitionAndShuffleStage extends Stage {
     if( taskRes.taskResult == TaskResultType.SUCCESS ) {
       val task = stageTaskSet.getTask( taskRes.taskId )
       val wid = task.getWorkerID
-      PartitionMetaStore.delPartitionMeta( wid, task.inputPartition )
+      PartitionMetaStore.delPartitionMeta( wid, task.inputPartition.head )
       task.outputPartition.zipWithIndex.foreach(
         outpartIdx => PartitionMetaStore.genAndAddPartitionMeta( outpartIdx._2 + 1, outpartIdx._1 )
       )
@@ -224,4 +225,28 @@ class PartitionAndShuffleStage extends Stage {
     super.taskResultHandler( taskRes )
   }
 
+}
+
+class MergeStage extends Stage {
+  override def toString: String = "MergeStage"
+
+  override protected def genTaskSet(): TaskSet = {
+    // TODO
+    // make pairs of tasks
+  }
+
+  private def makeInputPairs = {
+
+  }
+
+  override def taskResultHandler(taskRes: TaskReportMsg): Unit = {
+    if( taskRes.taskResult == TaskResultType.SUCCESS ) {
+      val task = stageTaskSet.getTask( taskRes.taskId )
+      val wid = task.getWorkerID
+      PartitionMetaStore.delPartitionMeta( wid, task.inputPartition(0) )
+      PartitionMetaStore.delPartitionMeta( wid, task.inputPartition(1) )
+      PartitionMetaStore.genAndAddPartitionMeta( wid, task.outputPartition(0) )
+    }
+    super.taskResultHandler( taskRes )
+  }
 }

@@ -6,7 +6,7 @@ import dpsort.core.network._
 import dpsort.core.utils.SerializationUtils.deserializeByteStringToObject
 import dpsort.worker.WorkerConf._
 import dpsort.core.utils.FileUtils
-import dpsort.worker.wUtils.PartitionUtils._
+import dpsort.worker.utils.PartitionUtils._
 
 
 import scala.concurrent.{ExecutionContext, Future}
