@@ -2,14 +2,15 @@ package dpsort.master
 
 import java.util.concurrent.locks.Lock
 
-import dpsort.core.MAX_KEY
+import dpsort.core.{MAX_KEY, MutablePartFunc, PartFunc}
 import dpsort.core.execution.Role
 import dpsort.core.execution._
 import dpsort.core.utils.SortUtils
-import dpsort.master.execution.{EmptyStage, GenBlockStage, LocalSortStage, SampleKeyStage, StageExitStatus, TerminateStage}
+import dpsort.master.execution.{EmptyStage, GenBlockStage, LocalSortStage, PartitionAndShuffleStage, SampleKeyStage, StageExitStatus, TerminateStage}
 import org.apache.logging.log4j.scala.Logging
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
@@ -21,7 +22,7 @@ object MasterContext extends Role with Logging {
   var lastStageExitStatus = StageExitStatus.SUCCESS
   var recordsCount: Int = 0
   var sampledKeys: mutable.ArrayBuffer[Array[Byte]] = mutable.ArrayBuffer[Array[Byte]]()
-  var partitionFunction: mutable.Map[Array[Byte], String] = mutable.Map[Array[Byte], String]() // TODO any better design?
+  var partitionFunction: PartFunc = Array[(Array[Byte], (String, Int))]()
 
   override def initialize = {
     // Start networking services
@@ -64,6 +65,11 @@ object MasterContext extends Role with Logging {
 
     genPartitionFunction
 
+    val stage3 = new PartitionAndShuffleStage
+    lastStageExitStatus = stage3.executeAndWaitForTermination()
+    println(s"${PartitionMetaStore.toString}")
+
+
     val stageLast = new TerminateStage
     lastStageExitStatus = stageLast.executeAndWaitForTermination()
 
@@ -95,9 +101,16 @@ object MasterContext extends Role with Logging {
       else { keysArr( idx * slidingSize ) } }
     )
 
-    // TODO zip with location
+    val shuffleInfo = PartitionMetaStore.getWorkerIds
+      .map( id => WorkerMetaStore.getWorkerShuffleIPPort(id) )
 
+    logger.debug("printing partition pivots : ")
+    pivots.foreach( a => logger.debug(s"> pivot : ${a.map(_.toByte).mkString}") )
 
+    assert( pivots.size == shuffleInfo.size )
+    val pFunc = pivots.zip( shuffleInfo ).toArray
+
+    MasterContext.partitionFunction = pFunc
   }
 
 

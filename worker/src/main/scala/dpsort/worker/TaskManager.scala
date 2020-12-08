@@ -31,7 +31,7 @@ object TaskManager extends Logging {
     if( isTaskSubmitAvailable ) {
       logger.debug(s"task execution available")
       numRunningThreads += 1
-      executor.execute( new TaskExecutionContext(task) )
+      executor.execute( new TaskExecutionRunnable(task) )
       new ResponseMsg( ResponseType.NORMAL )
     }
     else {
@@ -59,7 +59,7 @@ object TaskManager extends Logging {
 
 }
 
-class TaskExecutionContext( task: BaseTask ) extends Runnable with Logging {
+class TaskExecutionRunnable(task: BaseTask ) extends Runnable with Logging {
   override def run(): Unit = {
     logger.debug(s"task ${task.getId} execution started.")
     Thread.sleep(1000 )

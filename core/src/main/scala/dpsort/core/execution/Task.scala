@@ -3,6 +3,7 @@ package dpsort.core.execution
 import scala.collection._
 import java.io._
 
+import dpsort.core.PartFunc
 import dpsort.core.network.TaskReportMsg.TaskResultType
 import org.apache.logging.log4j.scala.Logging
 
@@ -24,7 +25,7 @@ trait Task {
   protected val inputPartition: String
   protected val outputPartition: Array[String]
   protected val offsets: Array[(Int, Int)]
-  protected val partitionFunc: Unit
+  protected val partitionFunc: PartFunc
 
   def getId : Int = id
   def getStatus : TaskStatus.Value = status
@@ -53,7 +54,7 @@ abstract class BaseTask( i: Int,
                          inputPart: String,
                          outputPart: Array[String],
                          off: Array[(Int, Int)],
-                         pFunc: Unit,
+                         pFunc: PartFunc,
                          sr: Float
                        ) extends Task with Serializable with Logging {
   protected val id: Int = i
@@ -63,7 +64,7 @@ abstract class BaseTask( i: Int,
   val inputPartition: String = inputPart
   val outputPartition: Array[String] = outputPart
   val offsets: Array[(Int, Int)] = off
-  val partitionFunc: Unit = pFunc
+  val partitionFunc: PartFunc = pFunc
   val sampleRatio: Float = sr
   // TODO add terminateStatus
 }
@@ -122,8 +123,8 @@ final class SampleKeyTask( i: Int,
 final class PartitionAndShuffleTask( i: Int,
                                      wi: Int,
                                      st: TaskStatus.Value,
-                                     inputPart: Unit,
-                                     outputPart: Unit,
-                                     partitionFunc: Unit  // todo revise
-                         ) extends BaseTask(i, wi, TaskType.PARTITIONANDSHUFFLETASK, st, inputPart, outputPart, null, null, 0) with Serializable {
+                                     inputPart: String,
+                                     outputPart: Array[String],
+                                     partitionFunc: PartFunc
+                         ) extends BaseTask(i, wi, TaskType.PARTITIONANDSHUFFLETASK, st, inputPart, outputPart, null, partitionFunc, 0) with Serializable {
 }

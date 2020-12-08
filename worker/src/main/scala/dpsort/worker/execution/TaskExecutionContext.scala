@@ -10,8 +10,10 @@ import dpsort.worker.WorkerConf._
 import org.apache.logging.log4j.scala.Logging
 import dpsort.core.utils.SortUtils
 import dpsort.core.utils.SerializationUtils.serializeObjectToByteString
-import dpsort.core.{LINE_SIZE_BYTES, KEY_OFFSET_BYTES, RecordLines}
+import dpsort.core.{KEY_OFFSET_BYTES, LINE_SIZE_BYTES, MutableRecordLines, PartFunc, RecordLines}
+import dpsort.worker.ShuffleManager
 
+import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 
 object ExecCtxtFetcher {
@@ -23,6 +25,7 @@ object ExecCtxtFetcher {
       case TaskType.TERMINATETASK => TerminateContext
       case TaskType.LOCALSORTTASK => LocalSortContext
       case TaskType.SAMPLEKEYTASK => SampleKeyContext
+      case TaskType.PARTITIONANDSHUFFLETASK => PartitionAndShuffleContext
       // TODO write more
     }
   }
@@ -112,20 +115,41 @@ object SampleKeyContext extends TaskExecutionContext with Logging {
 
 }
 
-object PartitionAndShuffleContext {
-  def run( task: PartitionAndShuffleTask ) = {
+object PartitionAndShuffleContext extends TaskExecutionContext with Logging {
 
-    // read partition and split into n partitions (list(arraybufer))
+  def run( _task: BaseTask ) = {
+    val task = _task.asInstanceOf[PartitionAndShuffleTask]
 
-    // find mine and write to file first
+    val filepath = getPartitionPath( task.inputPartition )
+    val partFunc: PartFunc = task.partitionFunc
+    val partitions = Array.fill[MutableRecordLines]( partFunc.size )( new ArrayBuffer[Array[Byte]]() )
 
-    // shuffle out
+    val nLines: Int = getNumLinesInFile( filepath )
+    SortUtils.splitPartitions( filepath, partFunc, partitions, nLines,  LINE_SIZE_BYTES )
 
-    // TODO 8
+    logger.debug(s"partitioning done")
+    partitions.zipWithIndex.foreach( bkidx => { logger.debug(s"${bkidx._2.toString} : ${bkidx._1.size}") } )
+
+    val partToStoreIdx = partFunc.zipWithIndex
+      .filter( pi => ( pi._1._2._1 equals get("dpsort.worker.ip") )
+                    && pi._1._2._2 == get("dpsort.worker.shufflePort").toInt )
+      .head
+      ._2
+
+    // write locally first
+    val linesToStore: Array[Array[Byte]] = partitions(partToStoreIdx).toArray
+    writeLinesToFile( linesToStore, getPartitionPath( task.outputPartition(partToStoreIdx) ) )
+
+    // shuffle out the rest
+    ShuffleManager.shuffleOut( task, partFunc, partitions, partToStoreIdx)
+
+    // TODO delete original partition
+
+
+    Left( Unit )
   }
+
 }
-
-
 
 
 object TerminateContext extends TaskExecutionContext  {

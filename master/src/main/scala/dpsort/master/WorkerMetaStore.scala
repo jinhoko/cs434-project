@@ -24,5 +24,6 @@ object WorkerMetaStore {
   def getWaitingWorkersNum: Int = MasterParams.NUM_SLAVES_INT - WorkerMetaStore.getWorkerNum
 
   def getWorkerIpPort(wid:Int): (String, Int) = workerMetaStore(wid).IP_PORT
+  def getWorkerShuffleIPPort(wid: Int): (String, Int) = workerMetaStore(wid).IP_SHPORT
 
 }
