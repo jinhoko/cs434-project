@@ -129,23 +129,16 @@ object PartitionAndShuffleContext extends TaskExecutionContext with Logging {
 
     logger.debug(s"partitioning done")
     partitions.zipWithIndex.foreach( bkidx => { logger.debug(s"${bkidx._2.toString} : ${bkidx._1.size}") } )
-
     val partToStoreIdx = partFunc.zipWithIndex
       .filter( pi => ( pi._1._2._1 equals get("dpsort.worker.ip") )
                     && pi._1._2._2 == get("dpsort.worker.shufflePort").toInt )
-      .head
-      ._2
-
+      .head._2
     // write locally first
     val linesToStore: Array[Array[Byte]] = partitions(partToStoreIdx).toArray
     writeLinesToFile( linesToStore, getPartitionPath( task.outputPartition(partToStoreIdx) ) )
-
     // shuffle out the rest
     ShuffleManager.shuffleOut( task, partFunc, partitions, partToStoreIdx)
-
-    // TODO delete original partition
-
-
+    deleteFile( filepath )
     Left( Unit )
   }
 
