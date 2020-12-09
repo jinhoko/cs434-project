@@ -67,7 +67,10 @@ trait Stage extends Logging {
   def taskResultHandler( taskRes: TaskReportMsg ): Unit = {
     val taskResultStatus = taskRes.taskResult match {
       case TaskResultType.SUCCESS => TaskStatus.SUCCESS
-      case TaskResultType.FAILED  => TaskStatus.FAILURE
+      case TaskResultType.FAILED  => {
+        logger.error(s"task ${taskRes.taskId.toString} failed!")
+        TaskStatus.FAILURE
+      }
     }
     stageTaskSet.getTask( taskRes.taskId ).setStatus( taskResultStatus )
   }
@@ -116,10 +119,16 @@ class TerminateStage extends Stage {
 
   override protected def genTaskSet(): TaskSet = {
     val taskSeq: Iterable[BaseTask] = {
-      // TODO if failure, mark failure so that no need to write.
       // only 1 termination for each worker is possible.
+      var outPartIdx = 1;
+      def genOutPartName(idx: Int) = "partition."+idx.toString
       for ( wid <- PartitionMetaStore.getWorkerIds )
-        yield new TerminateTask(genNewTaskID, wid, TaskStatus.WAITING, Unit, Unit)
+        yield {
+          val resultPart: PartitionMeta = PartitionMetaStore.getPartitionList(wid).head
+          val outFileName = genOutPartName(outPartIdx)
+          outPartIdx += 1
+          new TerminateTask(genNewTaskID, wid, TaskStatus.WAITING, resultPart.pName, outFileName )
+        }
     }
     new TaskSet( Random.shuffle( taskSeq ) ) // for fair scheduling
   }

@@ -97,7 +97,14 @@ object ShuffleManager extends Logging {
         if( isShuffleNotSubmitted( stat ) ) {
           val targetAddr:(String,Int) = partFunc(idx)._2
           val channel:ShuffleReqChannel =
-            ChannelMap.getOrAddChannel( targetAddr, new ShuffleReqChannel( targetAddr ) ).asInstanceOf[ShuffleReqChannel]
+            try {
+              ChannelMap.getChannel( targetAddr ).asInstanceOf[ShuffleReqChannel]
+            } catch {
+              case e: Throwable => {
+                ChannelMap.addChannel( targetAddr, new ShuffleReqChannel(targetAddr) )
+                ChannelMap.getChannel( targetAddr ).asInstanceOf[ShuffleReqChannel]
+              }
+            }
           var shuffleGranted = false
 
           shuffleSendLock.lock()

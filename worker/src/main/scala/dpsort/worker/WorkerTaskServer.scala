@@ -35,8 +35,6 @@ import dpsort.core.utils.SerializationUtils.deserializeByteStringToObject
 import dpsort.worker.WorkerConf._
 
 
-
-
 object WorkerTaskServer extends ServerInterface {
 
   private val port = get("dpsort.worker.port").toInt

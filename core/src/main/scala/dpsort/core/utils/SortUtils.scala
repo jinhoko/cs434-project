@@ -45,13 +45,11 @@ object SortUtils extends Logging {
     }
 
     def _compare(x: List[Byte], y: List[Byte] ): Int = {
-      (x, y) match {
-        case (xh :: xt, yh :: yt) => {
-          if( xh > yh ) {1}
-          else if ( xh < yh ) {-1}
-          else { _compare(xt, yt) }
-        }
-        case (List(), List()) => { 0 }
+      if( x.isEmpty ) 0
+      else {
+        if( x.head > y.head ) 1
+        else if (x.head < y.head) -1
+        else _compare( x.drop(1), y.drop(1) )
       }
     }
 

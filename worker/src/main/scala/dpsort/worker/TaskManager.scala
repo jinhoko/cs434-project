@@ -25,7 +25,7 @@
 package dpsort.worker
 
 import dpsort.worker.WorkerConf._
-import java.util.concurrent.{ExecutorService, Executors, ThreadPoolExecutor}
+import java.util.concurrent.{ExecutorService, Executors, Future, ThreadPoolExecutor}
 
 import com.google.protobuf.ByteString
 import dpsort.core.execution.{BaseTask, TaskType}
@@ -55,7 +55,7 @@ object TaskManager extends Logging {
     if( isTaskSubmitAvailable ) {
       logger.debug(s"task execution available")
       numRunningThreads += 1
-      executor.execute( new TaskExecutionRunnable(task) ) // TODO change here.
+      val execFuture: Future[_] = executor.submit( new TaskExecutionRunnable(task) )
       new ResponseMsg( ResponseType.NORMAL )
     }
     else {
@@ -72,7 +72,7 @@ object TaskManager extends Logging {
   def taskManagerContext(): Unit = {
     while( true ) {
       logger.info(s"status report : ${numRunningThreads} task(s) are running")
-      Thread.sleep( 3000 )
+      Thread.sleep( 5000 )
       if( terminationFlag ) {
         logger.info( s"executor termination flag is set. now terminating" )
         terminationContext
@@ -88,25 +88,32 @@ class TaskExecutionRunnable(task: BaseTask ) extends Runnable with Logging {
     logger.debug(s"task ${task.getId} execution started.")
     Thread.sleep(1000 )
 
-    val taskOutput: Either[Unit, ByteString] = ExecCtxtFetcher.getContext(task).run(task)
-    val resultData = taskOutput match {
-      case Left(value) => getEmptyByteString
-      case Right(value) => value
-    }
-
-    logger.info(s"task ${task.getId} execution finished. now reporting result")
     val reqChannel: MasterReqChannel = ChannelMap.getChannel(WorkerParams.MASTER_IP_PORT)
       .asInstanceOf[MasterReqChannel]
-    val reportResponse: ResponseMsg = reqChannel.reportTaskResult(
-      new TaskReportMsg( taskId = task.getId, taskResult = TaskResultType.SUCCESS, serializedTaskResultData = resultData  )
-    )
-    // TODO further consider possibility that report might fail
-      // execute 말고 submit으로 해서 onfailure 처리해야됨. 지금은 fail하면 그냥 보고를 안함.
-    // TODO further consider possibility that task might fail
 
-    TaskManager.numRunningThreads -= 1
-    if( task.getTaskType == TaskType.TERMINATETASK ){
-      TaskManager.terminationFlag = true
+    try {
+      val taskOutput: Either[Unit, ByteString] = ExecCtxtFetcher.getContext(task).run(task)
+      val resultData = taskOutput match {
+        case Left(value) => getEmptyByteString
+        case Right(value) => value
+      }
+      logger.info(s"task ${task.getId} execution finished. now reporting result")
+      val reportResponse: ResponseMsg = reqChannel.reportTaskResult(
+        new TaskReportMsg( taskId = task.getId, taskResult = TaskResultType.SUCCESS, serializedTaskResultData = resultData  )
+      )
+    } catch {
+      case e: Throwable => {
+        logger.error(s"task ${task.getId} execution failed. reporting failure")
+        val reportFailureResponse: ResponseMsg = reqChannel.reportTaskResult(
+          new TaskReportMsg( taskId = task.getId, taskResult = TaskResultType.FAILED, serializedTaskResultData = getEmptyByteString  )
+        )
+        e.printStackTrace()
+      }
+    } finally {
+      TaskManager.numRunningThreads -= 1
+      if( task.getTaskType == TaskType.TERMINATETASK ){
+        TaskManager.terminationFlag = true
+      }
     }
   }
 
