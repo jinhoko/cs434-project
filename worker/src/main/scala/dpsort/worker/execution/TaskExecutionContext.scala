@@ -27,7 +27,6 @@ object ExecCtxtFetcher {
       case TaskType.SAMPLEKEYTASK => SampleKeyContext
       case TaskType.PARTITIONANDSHUFFLETASK => PartitionAndShuffleContext
       case TaskType.MERGETASK => MergeContext
-      // TODO write more
     }
   }
 }
@@ -146,16 +145,19 @@ object PartitionAndShuffleContext extends TaskExecutionContext with Logging {
 }
 
 object MergeContext extends TaskExecutionContext {
+
   def run( _task: BaseTask) = {
     val task = _task.asInstanceOf[MergeTask]
-    // TODO
 
-    // call mergepartitions
-
-    // delete input
-
+    val input1FilePath = getPartitionPath( task.inputPartition(0) )
+    val input2FilePath = getPartitionPath( task.inputPartition(1) )
+    val outputFilePath = getPartitionPath( task.outputPartition(0) )
+    SortUtils.mergePartitions( input1FilePath, input2FilePath, outputFilePath, LINE_SIZE_BYTES)
+    deleteFile( input1FilePath )
+    deleteFile( input2FilePath )
     Left( Unit )
   }
+
 }
 
 

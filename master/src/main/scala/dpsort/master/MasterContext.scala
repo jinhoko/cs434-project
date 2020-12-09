@@ -71,6 +71,7 @@ object MasterContext extends Role with Logging {
     while( ! isMergeFinished ) {
       val stage4 = new MergeStage
       lastStageExitStatus = stage4.executeAndWaitForTermination()
+      println(s"${PartitionMetaStore.toString}")
     }
 
     val stageLast = new TerminateStage

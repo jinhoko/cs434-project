@@ -3,6 +3,7 @@ package dpsort.master.execution
 import dpsort.core.execution._
 import dpsort.core.network.TaskReportMsg
 import dpsort.core.network.TaskReportMsg.TaskResultType
+import dpsort.core.storage.PartitionMeta
 import dpsort.core.utils.IdUtils._
 import dpsort.core.utils.PartitionUtils._
 import dpsort.core.utils.{IdUtils, PartitionUtils}
@@ -12,6 +13,8 @@ import dpsort.master.MasterConf._
 import dpsort.master.TaskRunner._
 import org.apache.logging.log4j.scala.Logging
 
+import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import scala.math
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -231,12 +234,16 @@ class MergeStage extends Stage {
   override def toString: String = "MergeStage"
 
   override protected def genTaskSet(): TaskSet = {
-    // TODO
-    // make pairs of tasks
-  }
-
-  private def makeInputPairs = {
-
+    val taskSeq: Iterable[BaseTask] = {
+      for ( wid <- PartitionMetaStore.getWorkerIds )
+        yield {
+          val parts: ListBuffer[PartitionMeta] = PartitionMetaStore.getPartitionList( wid )
+          parts.grouped(2).toList.filter( pair => pair.size == 2).map(
+            pair => new MergeTask( genNewTaskID, wid, TaskStatus.WAITING, pair.map( el => el.pName ).toArray, genNewPartID )
+          ).toArray
+        }
+    }.flatten
+    new TaskSet( Random.shuffle( taskSeq ) )
   }
 
   override def taskResultHandler(taskRes: TaskReportMsg): Unit = {

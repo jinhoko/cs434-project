@@ -32,7 +32,6 @@ object WorkerContext extends Role with Logging {
   }
 
   override def execute: Unit = {
-    // Start shuffle channel TODO
     // Register worker to master
     val reqChannel: MasterReqChannel = ChannelMap.getChannel( WorkerParams.MASTER_IP_PORT )
       .asInstanceOf[MasterReqChannel]
@@ -43,8 +42,6 @@ object WorkerContext extends Role with Logging {
       return
     }
     logger.info("registration done")
-
-    // Start heartbeat channel TODO
 
     // Start TaskManager
     TaskManager.taskManagerContext()
