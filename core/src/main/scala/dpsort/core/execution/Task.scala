@@ -13,8 +13,8 @@ object TaskStatus extends Enumeration {
   val WAITING, SUBMITTED, SUCCESS, FAILURE = Value
 }
 
-object TaskType extends Enumeration { // TODO add types
-  val EMPTYTASK, TERMINATETASK, GENBLOCKTASK, LOCALSORTTASK, SAMPLEKEYTASK, PARTITIONANDSHUFFLETASK, MERGETASK = Value
+object TaskType extends Enumeration {
+  val EMPTYTASK, GENBLOCKTASK, LOCALSORTTASK, SAMPLEKEYTASK, PARTITIONANDSHUFFLETASK, MERGETASK, TERMINATETASK = Value
 }
 
 trait Task {
@@ -135,6 +135,6 @@ final class MergeTask( i: Int,
                        wi: Int,
                        st: TaskStatus.Value,
                        inputPart: Array[String],
-                       outputPart: Array[String],
-                     ) extends BaseTask(i, wi, TaskType.MERGETASK, st, inputPart, outputPart, null, null, 0) with Serializable {
+                       outputPart: String,
+                     ) extends BaseTask(i, wi, TaskType.MERGETASK, st, inputPart, Array[String](outputPart), null, null, 0) with Serializable {
 }

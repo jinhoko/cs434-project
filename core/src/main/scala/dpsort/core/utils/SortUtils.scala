@@ -1,6 +1,6 @@
 package dpsort.core.utils
 
-import java.io.{BufferedInputStream, FileInputStream}
+import java.io.{BufferedInputStream, BufferedOutputStream, FileInputStream, FileOutputStream}
 
 import dpsort.core.{MutableRecordLines, PartFunc}
 import dpsort.core.execution.BaseTask
@@ -9,6 +9,8 @@ import org.apache.logging.log4j.scala.Logging
 import scala.util.Random
 import scala.util.Sorting
 import dpsort.core.KEY_OFFSET_BYTES
+
+import scala.collection.mutable.ArrayBuffer
 
 object SortUtils extends Logging {
 
@@ -80,13 +82,47 @@ object SortUtils extends Logging {
 
   }
 
-  def mergePartitions() = {
+  def mergePartitions(inp1path: String, inp2path: String, outPath: String, lineSizeInBytes: Int) = {
 
-    // get and open 3 files in1 in2 out2
-    // read and write directly.
-
-
+    val inp1Stream = new BufferedInputStream( new FileInputStream(inp1path) )
+    val inp2Stream = new BufferedInputStream( new FileInputStream(inp2path) )
+    val outStream = new BufferedOutputStream( new FileOutputStream(outPath) )
+    try {
+      val line1 = Array.fill[Byte]( lineSizeInBytes )( 0 )
+      val line2 = Array.fill[Byte]( lineSizeInBytes )( 0 )
+      var inp1Eof = false
+      var inp2Eof = false
+      inp1Stream.read( line1, 0, lineSizeInBytes )
+      inp2Stream.read( line2, 0, lineSizeInBytes )
+      while( ! (inp1Eof && inp2Eof) ) {
+        if( (!inp1Eof) && (!inp2Eof) ) {
+          val compareVal = KeyOrdering.compare( line1, line2 )
+          if( compareVal > 0 ) { // x > y
+            outStream.write( line2 )
+            val res2 = inp2Stream.read( line2, 0, lineSizeInBytes )
+            if( res2 == -1 ) { inp2Eof = true }
+          } else {                // x <= y
+            outStream.write( line1 )
+            val res1 = inp1Stream.read( line1, 0, lineSizeInBytes )
+            if( res1 == -1 ) { inp1Eof = true }
+          }
+        } else {
+          if( inp1Eof ) {
+            outStream.write( line2 )
+            val res2 = inp2Stream.read( line2, 0, lineSizeInBytes )
+            if( res2 == -1 ) { inp2Eof = true }
+          } else {
+            outStream.write( line1 )
+            val res1 = inp1Stream.read( line1, 0, lineSizeInBytes )
+            if( res1 == -1 ) { inp1Eof = true }
+          }
+        }
+      }
+    } finally {
+      inp1Stream.close()
+      inp2Stream.close()
+      outStream.close()
+    }
   }
-
 
 }
