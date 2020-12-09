@@ -62,14 +62,18 @@ private class ShuffleServiceImpl extends ShuffleServiceGrpc.ShuffleService with 
       deserializeByteStringToObject(request.serializedShuffleData).asInstanceOf[Array[Array[Byte]]]
     val shufflePartName: String =
       deserializeByteStringToObject(request.serializedPartitionName).asInstanceOf[String]
-    logger.debug(s"shuffle data arrived, name: ${shufflePartName}")
 
     FileUtils.writeLinesToFile( shuffleData, getPartitionPath(shufflePartName) )
+
+    val response: ResponseMsg = new ResponseMsg( ResponseMsg.ResponseType.NORMAL )
+    Future.successful( response )
+  }
+
+  override def terminateShuffle(request: ShuffleRequestMsg ): Future[ResponseMsg] = {
+    logger.debug(s"shuffle termination request arrived")
     ShuffleManager.shuffleReceiveLock.lock()
     ShuffleManager.numOngoingReceiveShuffles -= 1
     ShuffleManager.shuffleReceiveLock.unlock()
-
-    logger.debug(s"arrived data write finished, name: ${shufflePartName}")
     val response: ResponseMsg = new ResponseMsg( ResponseMsg.ResponseType.NORMAL )
     Future.successful( response )
   }

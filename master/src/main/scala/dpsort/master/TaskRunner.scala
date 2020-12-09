@@ -106,6 +106,3 @@ object TaskRunner extends Logging{
   }
 
 }
-
-//  TODO it should further check heartbeat and could be able to directly call handler
-// to mark all failure.

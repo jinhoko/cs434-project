@@ -86,9 +86,7 @@ object ShuffleManager extends Logging {
     var numFinishedShuffle = 0
     def isShuffleNotSubmitted( v: ShuffleStatus.Value ) = v == ShuffleStatus.WAITING
 
-    def shuffleFinishCondition =
-      numFinishedShuffle == statusArr.size
-
+    def shuffleFinishCondition = numFinishedShuffle == statusArr.size
     // Mark locally saved file as finished
     logger.debug("shuffle local write done")
     statusArr(localPartIdx) = ShuffleStatus.SENT
@@ -122,27 +120,26 @@ object ShuffleManager extends Logging {
             logger.debug(s"shuffle request granted : now transmitting partition ${task.outputPartition(idx)} to " +
               s"${targetAddr._1}:${targetAddr._2.toString}")
             statusArr(idx) = ShuffleStatus.SENT
-            val serializedPName = serializeObjectToByteString( task.outputPartition(idx) )
-            val serializedPData = serializeObjectToByteString( partitions(idx).toArray: Array[Array[Byte]] )
-            val requestMsg = new ShuffleDataMsg( serializedPName, serializedPData )
 
-            val response: Future[ResponseMsg] = channel.sendShuffleData( requestMsg )
-            response onComplete {
-              case _ => {
-                shuffleSendLock.lock()
-                numOngoingSendShuffles -= 1
-                shuffleSendLock.unlock()
-                numFinishedShuffle += 1
-              }
+            val serializedPName = serializeObjectToByteString( task.outputPartition(idx) )
+            for( partSegment <- partitions(idx).grouped( get("dpsort.worker.maxShuffleMsgLines").toInt ) ) {
+              val serializedPDataSegment = serializeObjectToByteString( partSegment.toArray: Array[Array[Byte]] )
+              val requestMsg = new ShuffleDataMsg( serializedPName, serializedPDataSegment )
+              val response = channel.sendShuffleData( requestMsg )
+            }
+
+            val response = channel.terminateShuffle( new ShuffleRequestMsg() )
+            shuffleSendLock.lock()
+            numOngoingSendShuffles -= 1
+            shuffleSendLock.unlock()
+            numFinishedShuffle += 1
             }
           }
-
         }
       }
       Thread.sleep(3000)
       logger.info(s"shufflemanager status report : ${statusArr.count( v => ! isShuffleNotSubmitted(v))}" +
         s" shuffle(s) submitted / finished. ")
-    }
   }
 
 }

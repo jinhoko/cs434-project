@@ -79,7 +79,6 @@ class ShuffleReqChannel( ipPort: (String, Int) ) extends Channel with Logging {
     .usePlaintext.build
 
   private val shuffleBlockingStub = ShuffleServiceGrpc.blockingStub( shuffleChannel )
-  private val shuffleNonBlockingStub = ShuffleServiceGrpc.stub( shuffleChannel )
 
   /* Blocking request */
   def requestShuffle( request: ShuffleRequestMsg ): ResponseMsg = {
@@ -94,15 +93,27 @@ class ShuffleReqChannel( ipPort: (String, Int) ) extends Channel with Logging {
     }
   }
 
-  /* Non-Blocking request */
-  def sendShuffleData( request: ShuffleDataMsg ): Future[ResponseMsg] = {
+  /* Blocking request */
+  def sendShuffleData( request: ShuffleDataMsg ): ResponseMsg = {
     try {
       logger.debug("sending shuffle data")
-      val response: Future[ResponseMsg] = shuffleNonBlockingStub.sendShuffleData(request)
+      val response = shuffleBlockingStub.sendShuffleData(request)
       response
     } catch {
       case e: StatusRuntimeException =>
         logger.error(s"Shuffle data transmission failed: ${e.getStatus.toString}")
+        throw e
+    }
+  }
+
+  def terminateShuffle( request: ShuffleRequestMsg): ResponseMsg = {
+    try {
+      logger.debug("sending shuffle termination")
+      val response = shuffleBlockingStub.terminateShuffle(request)
+      response
+    } catch {
+      case e: StatusRuntimeException =>
+        logger.error(s"Shuffle termination notice failed: ${e.getStatus.toString}")
         throw e
     }
   }
