@@ -25,6 +25,7 @@
 package dpsort.core.network
 
 import scala.collection.mutable.{Map => MutableMap}
+import java.util.concurrent.locks.ReentrantLock
 
 import org.apache.logging.log4j.scala.Logging
 
@@ -34,30 +35,17 @@ import dpsort.core.network.Channel
 object ChannelMap extends Logging {
 
   // Key: (IP:PORT), Value: Trait
-  private val channelMap:MutableMap[(String, Int),Channel] = MutableMap.empty
+  private val channelMap: MutableMap[(String, Int),Channel] = MutableMap.empty
+  private val cmLock: ReentrantLock = new ReentrantLock()
 
   def addChannel(key:(String, Int), channel:Channel ): Unit = {
     channelMap += (key -> channel)
-    logger.debug(s"channel connection to ${key._1}:${key._2} established with type ${channel.toString}")
+    logger.info(s"channel connection to ${key._1}:${key._2} established with type ${channel.toString}")
   }
 
   def getChannel( key:(String, Int) ): Channel = {
     val chnl = channelMap(key) // will throw exception if not exists.
     chnl
-  }
-
-  def getOrAddChannel(key: (String, Int), newChannel: Channel ): Channel = {
-    try {
-      val origChnl = channelMap(key)
-      // if exists, it will not throw exception
-      newChannel.shutdown()
-      origChnl
-    } catch {
-      case e: Throwable => {
-        addChannel( key, newChannel )
-        getChannel( key )
-      }
-    }
   }
 
 }

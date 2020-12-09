@@ -122,4 +122,12 @@ object FileUtils extends Logging {
     }
   }
 
+  def moveFile( src: String, dst: String ) = {
+    val file = new File( src )
+    if( checkIfFileExists( src ) ) {
+      file.renameTo( new File(dst) )
+    } else{
+      logger.error("file moving failed")
+    }
+  }
 }

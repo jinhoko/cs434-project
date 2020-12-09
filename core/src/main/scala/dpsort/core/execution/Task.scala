@@ -91,7 +91,6 @@ abstract class BaseTask( i: Int,
   val offsets: Array[(Int, Int)] = off
   val partitionFunc: PartFunc = pFunc
   val sampleRatio: Float = sr
-  // TODO add terminateStatus
 }
 
 
@@ -120,9 +119,9 @@ final class GenBlockTask(  i: Int,
 final class TerminateTask( i: Int,
                            wi: Int,
                            st: TaskStatus.Value,
-                           inputPart: Unit,
-                           outputPart: Unit,
-                   ) extends BaseTask(i, wi, TaskType.TERMINATETASK, st, null, null, null, null, 0) with Serializable {
+                           inputPart: String,
+                           outputPart: String,
+                   ) extends BaseTask(i, wi, TaskType.TERMINATETASK, st, Array[String](inputPart), Array[String](outputPart), null, null, 0) with Serializable {
 }
 
 @SerialVersionUID(1003L)

@@ -79,27 +79,34 @@ object MasterContext extends Role with Logging {
     lastStageExitStatus = stage0.executeAndWaitForTermination()
     println(s"${PartitionMetaStore.toString}")
 
-    val stage1 = new LocalSortStage
-    lastStageExitStatus = stage1.executeAndWaitForTermination()
-    println(s"${PartitionMetaStore.toString}")
-
-    val stage2 = new SampleKeyStage
-    lastStageExitStatus = stage2.executeAndWaitForTermination()
-    genPartitionFunction
-
-    val stage3 = new PartitionAndShuffleStage
-    lastStageExitStatus = stage3.executeAndWaitForTermination()
-    println(s"${PartitionMetaStore.toString}")
-
-    while( ! isMergeFinished ) {
-      val stage4 = new MergeStage
-      lastStageExitStatus = stage4.executeAndWaitForTermination()
+    if( lastStageExitStatus == StageExitStatus.SUCCESS ) {
+      val stage1 = new LocalSortStage
+      lastStageExitStatus = stage1.executeAndWaitForTermination()
       println(s"${PartitionMetaStore.toString}")
+    }
+
+    if( lastStageExitStatus == StageExitStatus.SUCCESS ) {
+      val stage2 = new SampleKeyStage
+      lastStageExitStatus = stage2.executeAndWaitForTermination()
+      genPartitionFunction
+    }
+
+    if( lastStageExitStatus == StageExitStatus.SUCCESS ) {
+      val stage3 = new PartitionAndShuffleStage
+      lastStageExitStatus = stage3.executeAndWaitForTermination()
+      println(s"${PartitionMetaStore.toString}")
+    }
+
+    if( lastStageExitStatus == StageExitStatus.SUCCESS ) {
+      while (!isMergeFinished) {
+        val stage4 = new MergeStage
+        lastStageExitStatus = stage4.executeAndWaitForTermination()
+        println(s"${PartitionMetaStore.toString}")
+      }
     }
 
     val stageLast = new TerminateStage
     lastStageExitStatus = stageLast.executeAndWaitForTermination()
-
   }
 
   private def genPartitionFunction(): Unit = {

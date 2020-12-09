@@ -27,7 +27,7 @@ package dpsort.core.execution
 import dpsort.core.execution.TaskStatus
 
 @SerialVersionUID(2000L)
-final class TaskResult(tid: Int, tr: TaskStatus.Value) extends Serializable {
+final class TaskResult(tid: Int, ts: TaskStatus.Value) extends Serializable {
   val taskID = tid
-  val taskStatus = tr
+  val taskStatus = ts
 }

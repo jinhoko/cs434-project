@@ -26,19 +26,18 @@ package dpsort.worker.execution
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
-
 import com.google.protobuf.ByteString
 import org.apache.logging.log4j.scala.Logging
-
 import dpsort.core.execution._
 import dpsort.core.execution.TaskType
 import dpsort.core.utils.FileUtils._
-import dpsort.core.utils.SortUtils
+import dpsort.core.utils.{FileUtils, SortUtils}
 import dpsort.core.utils.SerializationUtils.serializeObjectToByteString
 import dpsort.core.{KEY_OFFSET_BYTES, LINE_SIZE_BYTES, MutableRecordLines, PartFunc, RecordLines}
 import dpsort.worker.utils.PartitionUtils._
 import dpsort.worker.WorkerConf._
 import dpsort.worker.ShuffleManager
+import dpsort.worker.WorkerParams.OUTPUT_DIR_STR
 
 
 object ExecCtxtFetcher {
@@ -186,12 +185,18 @@ object MergeContext extends TaskExecutionContext {
 }
 
 
-object TerminateContext extends TaskExecutionContext  {
+object TerminateContext extends TaskExecutionContext with Logging {
   def run( _task: BaseTask ) = {
     val task = _task.asInstanceOf[TerminateTask]
 
-    // TODO need to writeback to PMS
-    // TODO terminate task는 딱 한번만 실행되어야 함.
+    val resultFilePath = getPartitionPath( task.inputPartition(0) )
+    if( ! (task.outputPartition(0) equals "") ) {
+      val resultOutputPath = getAbsPath( OUTPUT_DIR_STR )+"/"+task.outputPartition(0)
+      logger.info(s"writing output file to : ${resultOutputPath}")
+      FileUtils.moveFile( resultFilePath, resultOutputPath )
+    } else {
+      FileUtils.deleteFile( resultFilePath )
+    }
     Left( Unit )
   }
 }
