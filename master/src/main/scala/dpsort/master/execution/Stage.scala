@@ -1,4 +1,36 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Jinho Ko
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package dpsort.master.execution
+
+import scala.collection.mutable.ListBuffer
+import scala.math
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+import scala.util.Random
+
+import org.apache.logging.log4j.scala.Logging
 
 import dpsort.core.execution._
 import dpsort.core.network.TaskReportMsg
@@ -6,19 +38,11 @@ import dpsort.core.network.TaskReportMsg.TaskResultType
 import dpsort.core.storage.PartitionMeta
 import dpsort.core.utils.IdUtils._
 import dpsort.core.utils.PartitionUtils._
-import dpsort.core.utils.{IdUtils, PartitionUtils}
 import dpsort.core.utils.SerializationUtils._
 import dpsort.master.{MasterContext, PartitionMetaStore, TaskRunner}
 import dpsort.master.MasterConf._
 import dpsort.master.TaskRunner._
-import org.apache.logging.log4j.scala.Logging
 
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
-import scala.math
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import scala.util.Random
 
 object StageExitStatus extends Enumeration {
   val SUCCESS, FAILURE = Value

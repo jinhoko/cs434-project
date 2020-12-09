@@ -1,19 +1,44 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Jinho Ko
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package dpsort.master
-
-import java.util.concurrent.locks.Lock
-
-import dpsort.core.{MAX_KEY, MutablePartFunc, PartFunc}
-import dpsort.core.execution.Role
-import dpsort.core.execution._
-import dpsort.core.utils.SortUtils
-import dpsort.master.execution.{EmptyStage, GenBlockStage, LocalSortStage, MergeStage, PartitionAndShuffleStage, SampleKeyStage, StageExitStatus, TerminateStage}
-import org.apache.logging.log4j.scala.Logging
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
+import java.util.concurrent.locks.Lock
+
+import org.apache.logging.log4j.scala.Logging
+
+import dpsort.core.{MAX_KEY, MutablePartFunc, PartFunc}
+import dpsort.core.execution._
+import dpsort.core.execution.Role
+import dpsort.core.utils.SortUtils
+import dpsort.master.execution._
+
 
 object MasterContext extends Role with Logging {
 
@@ -27,12 +52,10 @@ object MasterContext extends Role with Logging {
   override def initialize = {
     // Start networking services
     MasterTaskServer.startServer
-    HeartBeatServer.startServer
   }
 
   override def terminate = {
     MasterTaskServer.stopServer
-    HeartBeatServer.stopServer
   }
 
   override def execute = {
