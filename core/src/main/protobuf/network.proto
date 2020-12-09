@@ -41,6 +41,7 @@ service WorkerTaskService {
 service ShuffleService {
   rpc RequestShuffle (ShuffleRequestMsg) returns (ResponseMsg) {}
   rpc SendShuffleData (ShuffleDataMsg) returns (ResponseMsg) {}
+  rpc TerminateShuffle (ShuffleRequestMsg) returns (ResponseMsg) {}
 }
 
 

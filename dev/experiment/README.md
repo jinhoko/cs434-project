@@ -27,3 +27,23 @@ git clone https://github.com/dgggit/cs434-project
 > gensort -b2000000 -a 1000000 input-1m-00002
 ...
 ```
+
+### 6. execute
+
+### 7. validate sort
+```
+Example 1 - to validate the sorted order of a single sort output file:
+    valsort sortoutputfile
+
+Example 2 - to validate the sorted order of output that has been
+partitioned into 4 output files: out0.dat, out1.dat, out2.dat and out3.dat:
+    valsort -o out0.sum out0.dat
+    valsort -o out1.sum out1.dat
+    valsort -o out2.sum out2.dat
+    valsort -o out3.sum out3.dat
+    cat out0.sum out1.sum out2.sum out3.sum > all.sum
+    valsort -s all.sum
+```
+
+### Reference
+- gensort library : http://www.ordinal.com/gensort.html
