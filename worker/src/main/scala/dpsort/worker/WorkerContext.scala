@@ -74,12 +74,14 @@ object WorkerContext extends Role with Logging {
   }
 
   private def genRegistry() = {
+    logger.info("reading inputs to calculate the size.. it may take a while")
     val registryObj = new Registry(
       WorkerConf.get("dpsort.worker.ip"),
       WorkerConf.get("dpsort.worker.port").toInt,
       WorkerConf.get("dpsort.worker.shufflePort").toInt,
       WorkerParams.INPUT_FILES_STRARR.map( new PartitionMeta( _ ) )
     )
+    logger.info("read all the inputs. now generating registry message.")
     new RegistryMsg( serializeObjectToByteString( registryObj ) )
   }
 

@@ -109,8 +109,8 @@ fi
 export DPSORT_SCALA_VERSION="2.12"
 export DPSORT_VERSION="0.1.0"
 
-sbt -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.xml \
-"master/run ${num_slaves}"
+export SBT_OPTS="-Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.xml -Xmx3G -Xms3G"
+sbt "master/run ${num_slaves}"
 
 #java -Dlog4j.configurationFile=$DPSORT_HOME/conf/log4j2.xml \
 #-jar $DPSORT_HOME/master/target/scala-${DPSORT_SCALA_VERSION}/master-assembly-${DPSORT_VERSION}-SNAPSHOT.jar \

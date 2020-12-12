@@ -38,7 +38,6 @@ object SerializationUtils extends Logging {
     val oos = new ObjectOutputStream(stream)
     oos.writeObject(obj)
     oos.close()
-    logger.debug(s"serialization of object type: ${ obj.getClass.getTypeName } success")
     stream toByteArray
   }
   def serializeObjectToByteString( obj: Serializable ): ByteString = {
@@ -51,7 +50,6 @@ object SerializationUtils extends Logging {
     val ois = new ObjectInputStream(stream)
     val outputObj = ois.readObject().asInstanceOf[T]
     ois.close()
-    logger.debug(s"deserialization of object type: ${ outputObj.getClass.getTypeName } success")
     outputObj
   }
   def deserializeByteStringToObject[T]( byteStr: ByteString ): T = {

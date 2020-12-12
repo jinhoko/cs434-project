@@ -225,8 +225,15 @@ class SampleKeyStage extends Stage {
     val sampledKeys = deserializeByteStringToObject( taskRes.serializedTaskResultData )
       .asInstanceOf[Array[Array[Byte]]]
     MasterContext.registryLock.lock()
-    MasterContext.sampledKeys ++= sampledKeys
-    MasterContext.registryLock.unlock()
+    try {
+      MasterContext.sampledKeys ++= sampledKeys
+    } catch {
+      case e: Throwable => {
+        logger.error("failed to aggregate sampled values from the task output. bypassing the samples")
+      }
+    } finally {
+        MasterContext.registryLock.unlock()
+    }
     super.taskResultHandler( taskRes )
   }
 }
