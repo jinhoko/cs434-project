@@ -28,7 +28,7 @@ import org.apache.logging.log4j.scala.Logging
 
 
 trait Params extends Logging {
-  // NOTE : must be rewrited from the class implementation
+
   protected def setParams(params: Array[String])
 
   def applyParams( params: Array[String] ): Unit = {

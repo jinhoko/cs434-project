@@ -34,9 +34,7 @@ import dpsort.core.network.Channel
 
 object ChannelMap extends Logging {
 
-  // Key: (IP:PORT), Value: Trait
   private val channelMap: MutableMap[(String, Int),Channel] = MutableMap.empty
-  private val cmLock: ReentrantLock = new ReentrantLock()
 
   def addChannel(key:(String, Int), channel:Channel ): Unit = {
     channelMap += (key -> channel)
@@ -44,7 +42,10 @@ object ChannelMap extends Logging {
   }
 
   def getChannel( key:(String, Int) ): Channel = {
-    val chnl = channelMap(key) // will throw exception if not exists.
+    // NullPointerException handling is up to user
+    // since when channel does not exists, user can add
+    // a new channel and then get channel again.
+    val chnl = channelMap(key)
     chnl
   }
 

@@ -38,7 +38,7 @@ import dpsort.worker.execution.ExecCtxtFetcher
 import org.apache.logging.log4j.scala.Logging
 
 
-object TaskManager extends Logging {
+object TaskExecutor extends Logging {
 
   private val executor: ExecutorService = Executors.newFixedThreadPool( get("dpsort.worker.threads").toInt )
 
@@ -110,9 +110,9 @@ class TaskExecutionRunnable(task: BaseTask ) extends Runnable with Logging {
         e.printStackTrace()
       }
     } finally {
-      TaskManager.numRunningThreads -= 1
+      TaskExecutor.numRunningThreads -= 1
       if( task.getTaskType == TaskType.TERMINATETASK ){
-        TaskManager.terminationFlag = true
+        TaskExecutor.terminationFlag = true
       }
     }
   }

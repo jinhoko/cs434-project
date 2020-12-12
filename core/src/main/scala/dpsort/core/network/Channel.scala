@@ -26,10 +26,6 @@ package dpsort.core.network
 
 import io.grpc.{StatusRuntimeException, ManagedChannelBuilder, ManagedChannel}
 
-
 trait Channel {
   def shutdown():Unit
 }
-
-// there might be better design for channel
-// too many ovelapping code for each channels

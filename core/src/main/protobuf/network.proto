@@ -48,17 +48,16 @@ service ShuffleService {
 /*
  * Message Definition
  */
+
+// For some messages, we send bytes-serialized object
+// directly rather than elaborate message definition
+// due to its complexity
+
 message RegistryMsg {
-  // We send bytes-serialized object directly
-  // rather than elaborate message definition
-  // due to its complexity
   bytes serializedRegistryObject = 1;
 }
 
 message TaskMsg {
-  // We send bytes-serialized object directly
-  // rather than elaborate message definition
-  // due to its complexity
   bytes serializedTaskObject = 1;
 }
 

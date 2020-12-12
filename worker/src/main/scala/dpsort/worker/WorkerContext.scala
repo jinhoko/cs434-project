@@ -70,7 +70,7 @@ object WorkerContext extends Role with Logging {
     logger.info("registration done")
 
     // Start TaskManager
-    TaskManager.taskManagerContext()
+    TaskExecutor.taskManagerContext()
   }
 
   private def genRegistry() = {

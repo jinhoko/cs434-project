@@ -45,7 +45,6 @@ object ShuffleStatus extends Enumeration {
   val WAITING, SENT = Value
 }
 
-/* Handles both shuffle output and input */
 object ShuffleManager extends Logging {
 
   private val maxShuffleConnections = get("dpsort.worker.maxShuffleConnections").toInt

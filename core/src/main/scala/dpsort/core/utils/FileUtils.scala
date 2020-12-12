@@ -31,6 +31,8 @@ import org.apache.logging.log4j.scala.Logging
 
 /**
  * System PWD is set to $DPSORT_HOME
+ * Every relative path input will have $DPSORT_HOME
+ * as its current directory.
  */
 object FileUtils extends Logging {
 

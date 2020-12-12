@@ -2,24 +2,22 @@
 A project repository for POSTECH CSED434 Adv. Programming Fall 2020
 
 ### Author
-**Jinho Ko (20180274)**, dept. of Creative IT Eng. 
+**Jinho Ko (20180274)**, jinho.ko AT postech.ac.kr
 
 ### Project Name 
-**DPsort** : A Distributed, Parallel Sorting Mergesort System
+**DPsort** : A Distributed, Parallel Sorting MergeSort System
 
 ### Project Goal
-**Distributed/Parallel** sorting K/V records stored on **multiple disks** and **multiple machines**.
+**Distributed/Parallel** sorting K/V records stored on **multiple directories** and **multiple machines**.
 
 ### Execution Guide
 
-#### Compile and Generating Assembly
-```$xslt
-$ sbt compile
-$ sbt assembly
+#### Master
+```
+$ bash bin/master NUM_WORKERS
 ```
 
-#### Execution
-```$xslt
-$ bash bin/master 3
-$ bash bin/worker M_IP:M_PORT -I I_DIR1 I_DIR2 I_DIR3 -O O_DIR
+#### Worker
+```
+$ bash bin/worker M_IP:M_PORT -I I_DIR1 I_DIR2 I_DIR3 ...  -O O_DIR
 ```

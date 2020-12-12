@@ -51,7 +51,7 @@ private class WorkerTaskServiceImpl extends WorkerTaskServiceGrpc.WorkerTaskServ
 
   override def requestTask(request: TaskMsg): Future[ResponseMsg] = {
     val task: BaseTask = deserializeByteStringToObject[BaseTask]( request.serializedTaskObject )
-    val response: ResponseMsg = TaskManager.taskRequestHandler( task )
+    val response: ResponseMsg = TaskExecutor.taskRequestHandler( task )
     Future.successful( response )
   }
 
