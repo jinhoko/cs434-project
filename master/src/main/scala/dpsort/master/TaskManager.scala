@@ -35,7 +35,7 @@ import dpsort.core.utils.SerializationUtils.serializeObjectToByteString
 import dpsort.master.execution.Stage
 
 
-object TaskRunner extends Logging{
+object TaskManager extends Logging{
 
   private var registeredStage: Stage = null
 

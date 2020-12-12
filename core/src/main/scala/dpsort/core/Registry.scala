@@ -39,7 +39,8 @@ final class Registry(ip: String,
   def IP_PORT: (String, Int) = (IP, PORT)
   def IP_SHPORT: (String, Int) = (IP, SHUFFLE_PORT)
   val INPUT_FILES: Array[PartitionMeta] = input_files
-  // Following data will be determined in master
+  // Following data will be determined by master,
+  // not by worker.
   var _WORKER_ID: Int = 0
 
   override def toString: String = {

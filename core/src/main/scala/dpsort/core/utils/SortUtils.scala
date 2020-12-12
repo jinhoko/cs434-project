@@ -57,8 +57,8 @@ object SortUtils extends Logging {
 
   def sortLines( lines: Array[Array[Byte]] ): Array[Array[Byte]] = {
     /* The algorithm is a in-place sorting algorithm
-     * Thus no additional memory that exceeds the partition size
-     * will be required
+     * Thus no additional memory that exceeds
+     * the partition size will be required
      * */
     logger.debug(s"in-place quicksort ${lines.size} lines")
     Sorting.quickSort(lines)( KeyOrdering )
@@ -92,7 +92,10 @@ object SortUtils extends Logging {
         val line = Array.fill[Byte]( lineSizeInBytes )( 0 )
         inputStream.read( line, 0, lineSizeInBytes )
         val keyIdx = partFunc.zipWithIndex
-                  .filter( kv => { assert( kv._1._1.size == line.slice(0, KEY_OFFSET_BYTES).size && line.slice(0, KEY_OFFSET_BYTES).size == KEY_OFFSET_BYTES  ) ; KeyOrdering.compare( kv._1._1, line.slice(0, KEY_OFFSET_BYTES) ) >= 0 }) // at least one key is filtered
+                  .filter( kv => {
+                    assert( kv._1._1.size == line.slice(0, KEY_OFFSET_BYTES).size && line.slice(0, KEY_OFFSET_BYTES).size == KEY_OFFSET_BYTES  );
+                    KeyOrdering.compare( kv._1._1, line.slice(0, KEY_OFFSET_BYTES) ) >= 0 }
+                  ) // at least one key is filtered
                   .head._2
         partitions(keyIdx).append(line)
       }
