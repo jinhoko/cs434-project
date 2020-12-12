@@ -106,7 +106,7 @@ object FileUtils extends Logging {
   }
 
   def writeLinesToFile(data: Array[Array[Byte]], path: String ) = {
-    val outputStream = new BufferedOutputStream( new FileOutputStream( path ) )
+    val outputStream = new BufferedOutputStream( new FileOutputStream( path, true ))
     for ( line: Array[Byte] <- data ) {
       outputStream.write( line )
     }
@@ -124,10 +124,12 @@ object FileUtils extends Logging {
 
   def moveFile( src: String, dst: String ) = {
     val file = new File( src )
+    var success = false
     if( checkIfFileExists( src ) ) {
-      file.renameTo( new File(dst) )
-    } else{
-      logger.error("file moving failed")
+      success = file.renameTo( new File(dst) )
+    }
+    if( !success ) {
+      logger.error("moving file failed")
     }
   }
 }

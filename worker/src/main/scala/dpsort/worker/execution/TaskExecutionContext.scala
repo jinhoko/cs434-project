@@ -151,8 +151,8 @@ object PartitionAndShuffleContext extends TaskExecutionContext with Logging {
     val nLines: Int = getNumLinesInFile( filepath )
     SortUtils.splitPartitions( filepath, partFunc, partitions, nLines,  LINE_SIZE_BYTES )
 
-    logger.debug(s"partitioning done")
-    partitions.zipWithIndex.foreach( bkidx => { logger.debug(s"${bkidx._2.toString} : ${bkidx._1.size}") } )
+    logger.debug(s"partitioning done : ")
+    partFunc.zip( partitions ).foreach( pfpt => { logger.debug(s"(${pfpt._1._2._1}, ${pfpt._1._2._2}) : ${pfpt._2.size} lines") } )
     val partToStoreIdx = partFunc.zipWithIndex
       .filter( pi => ( pi._1._2._1 equals get("dpsort.worker.ip") )
                     && pi._1._2._2 == get("dpsort.worker.shufflePort").toInt )
